@@ -27,7 +27,7 @@ def logger_init(
         level=log_level,
         format=formatter,
         datefmt="%m%d %H%M",
-        handlers=[logging.FileHandler(log_path), logging.StreamHandler(sys.stdout)])
+        handlers=[logging.FileHandler(log_path, encoding='utf-8', mode="a"), logging.StreamHandler(sys.stdout)])
     logging.disable(logging.DEBUG)
 
 
