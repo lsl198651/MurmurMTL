@@ -25,10 +25,10 @@ def cover2embedings(data_folder, csv_path):
         w = get_weight(current_patient_data)
         ps = get_pregnancy_status(current_patient_data)
 
-        pregnancy_status.append(ps)
+        # pregnancy_status.append(ps)
         patient_id.append(pid)
         locations.append(location)
-        total_spec.append([a, s, h, w])
+        total_spec.append([a, s, h, w, ps])
 
     info = zip(pid, location, total_spec)
     pd.DataFrame(info).to_csv(f"{csv_path}.csv", index=False, header=False)
