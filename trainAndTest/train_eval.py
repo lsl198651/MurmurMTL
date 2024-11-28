@@ -6,15 +6,15 @@ import torch
 import torch.nn as nn
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
-from torcheval.metrics.functional import binary_auprc, binary_auroc, binary_f1_score, binary_confusion_matrix, \
-    binary_accuracy, binary_precision, binary_recall
+from torcheval.metrics.functional import binary_confusion_matrix, \
+    binary_accuracy
 from transformers import optimization
 
-from util.class_def import FocalLoss
+from util.utils_loss import FocalLoss
 from util.utils_train import new_segment_cluster, new_duration_cluster
 
 
-def train_test(model,
+def train_val(model,
                train_loader,
                val_loader,
                optimizer=None,
@@ -70,24 +70,25 @@ def train_test(model,
         train_len = 0
         input_train = []
         target_train = []
-        for data_t, label_t, index_t in train_loader:
-            data_t, label_t, index_t = data_t.to(device), label_t.to(device), index_t.to(device)
-            predict_t = model(data_t)
-            loss = loss_fn(predict_t, label_t.long())
+        for data_train, label_train, index_train, emb_train in train_loader:
+            data_train, label_train, index_train, emb_train = \
+                data_train.to(device), label_train.to(device), index_train.to(device), emb_train.to(device)
+            output_train = model(data_train, emb_train)
+            loss_train = loss_fn(output_train, label_train.long())
             optimizer.zero_grad()
-            loss.backward()
+            loss_train.backward()
             optimizer.step()
-            train_loss += loss.item()
+
+            train_loss += loss_train.item()
             # get the index of the max log-probability
-            pred_t = predict_t.max(1, keepdim=True)[1]
+            pred_t = output_train.max(1, keepdim=True)[1]
             pred_t = pred_t.squeeze(1)
             input_train.extend(pred_t.cpu().tolist())
-            target_train.extend(label_t.cpu().tolist())
-            correct_t += pred_t.eq(label_t).sum().item()
+            target_train.extend(label_train.cpu().tolist())
+            correct_t += pred_t.eq(label_train).sum().item()
             train_len += len(pred_t)
         # ========================/ 调库计算指标  /========================== #
-        train_input, train_target = torch.as_tensor(
-            input_train), torch.as_tensor(target_train)
+        train_input, train_target = torch.as_tensor(input_train), torch.as_tensor(target_train)
         train_acc = binary_accuracy(train_input, train_target)
         # print(f"train_acc:{train_acc:.2%}")
         # ========================/ 验证网络 /========================== #
@@ -98,25 +99,27 @@ def train_test(model,
         result_list_present = []
         test_loss = 0
         correct_v = 0
-        with torch.no_grad():
-            for data_v, label_v, index_v in val_loader:
-                data_v, label_v, index_v = data_v.to(device), label_v.to(device), index_v.to(device)
+        with (torch.no_grad()):
+            for data_val, label_val, index_val, emb_val in val_loader:
+                data_val, label_val, index_val, emb_val =\
+                    data_val.to(device), label_val.to(device), index_val.to(device), emb_val.to(device)
                 optimizer.zero_grad()
-                predict_v = model(data_v)
-                loss_v = loss_fn(predict_v, label_v.long())
+                output_val = model(data_val,emb_val)
+                loss_val = loss_fn(output_val, label_val.long())
                 # get the index of the max log-probability
-                pred_v = predict_v.max(1, keepdim=True)[1]
-                test_loss += loss_v.item()
-                pred_v = pred_v.squeeze(1)
-                correct_v += pred_v.eq(label_v).sum().item()
-                idx_v = index_v[pred_v.ne(label_v)]
-                result_list_present.extend(index_v[pred_v.eq(1)].cpu().tolist())
+                pred_val = output_val.max(1, keepdim=True)[1]
+                test_loss += loss_val.item()
+                pred_val = pred_val.squeeze(1)
+                correct_v += pred_val.eq(label_val).sum().item()
+                idx_v = index_val[pred_val.ne(label_val)]
+                result_list_present.extend(index_val[pred_val.eq(1)].cpu().tolist())
                 try:
                     error_index.extend(idx_v.cpu().tolist())
                 except TypeError:
-                    print("TypeError: 'int' object is not iterable")
-                pred.extend(pred_v.cpu().tolist())
-                label.extend(label_v.cpu().tolist())
+                    logging.ERROR("TypeError: 'int' object is not iterable")
+                    # print("TypeError: 'int' object is not iterable")
+                pred.extend(pred_val.cpu().tolist())
+                label.extend(label_val.cpu().tolist())
         if args.scheduler_flag is not None:
             scheduler.step()
         # ========================/ 调库计算指标  /========================== #

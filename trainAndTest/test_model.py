@@ -7,8 +7,9 @@ from torch.utils.data import DataLoader
 from torcheval.metrics.functional import binary_auprc, binary_auroc, binary_f1_score, binary_confusion_matrix, \
     binary_accuracy, binary_precision, binary_recall
 
-from util.class_def import FocalLoss, DatasetClass_t
+from util.utils_loss import FocalLoss
 from util.helper_code import get_murmur, find_patient_files, load_patient_data
+from util.utils_datasetClass import DatasetTest
 
 
 def run_model(model_folder, data_folder, output_folder):
@@ -42,10 +43,10 @@ def run_model(model_folder, data_folder, output_folder):
             for subdir in dir:  # 每个location的文件夹
                 dir_path = os.path.join(root, subdir)
                 # 读取测试集标签和特征
-                features_t, label_t, names_t, index_t, data_id_t, feat_t = get_wav_data(dir_path, num=0)
-                test_loader = DataLoader(DatasetClass_t(wavlabel=np.array(label_t),
-                                                        wavdata=np.array(features_t),
-                                                        wavidx=np.array(index_t)),
+                features_t, label_t, names_t, index_test, data_id_t, feat_test = get_wav_data(dir_path, num=0)
+                test_loader = DataLoader(DatasetTest(wavlabel=np.array(label_t),
+                                                     wavdata=np.array(features_t),
+                                                     wavidx=np.array(index_test)),
                                          batch_size=len(label_t),
                                          shuffle=False,
                                          pin_memory=True,
@@ -54,12 +55,12 @@ def run_model(model_folder, data_folder, output_folder):
                 label_list = []
                 test_loss = 0
                 with torch.no_grad():
-                    for batch_idx, (data_t, target_t, index_t, feat_t) in enumerate(test_loader):
-                        data_t, target_t, index_t, feat_t = data_t.to(device), target_t.to(device), index_t.to(
-                            device), feat_t.to(device)
+                    for batch_idx, (data_test, target_test, index_test, feat_test) in enumerate(test_loader):
+                        data_test, target_test, index_test, feat_test = \
+                            data_test.to(device), target_test.to(device), index_test.to(device), feat_test.to(device)
                         optimizer.zero_grad()
-                        predict_t = model(data_t, feat_t)
-                        loss_t = loss_fn(predict_t, target_t.long())
+                        predict_t = model(data_test, feat_test)
+                        loss_t = loss_fn(predict_t, target_test.long())
                         test_loss += loss_t.item()
                         pred_t = predict_t.max(1, keepdim=True)[1]
                         label = 1 if np.mean(pred_t.cpu().tolist()) >= .5 else 0

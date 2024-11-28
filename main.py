@@ -7,9 +7,9 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 from model.senet.my_resnet import My_ResNet
-from trainAndTest.train_eval import train_test
-from util.class_def import DatasetClass
+from trainAndTest.train_eval import train_val
 from util.utils_dataloader import fold5_dataloader
+from util.utils_datasetClass import DatasetClass, DatasetMTL
 from util.utils_train import logger_init
 
 if __name__ == '__main__':
@@ -92,14 +92,17 @@ if __name__ == '__main__':
         # ========================/ 加载数据集 /========================== #
         train_features, train_label, train_index, test_features, test_label, test_index = fold5_dataloader(
             args.set_path, args.train_fold, args.test_fold, args.data_augmentation, args.set_name)
-
+        # todo 补充加入的嵌入数据，train_embs=[],test_embs=[]
+        train_embs = 0
+        test_embs = 0
         # ========================/ setup loader /========================== #
         if args.samplerWeight:
             weights = [5 if label == 1 else 1 for label in train_label]
             Data_sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-            train_loader = DataLoader(DatasetClass(features=train_features,
-                                                   wav_label=train_label,
-                                                   wav_index=train_index),
+            train_loader = DataLoader(DatasetMTL(features=train_features,
+                                                 wav_label=train_label,
+                                                 wav_index=train_index,
+                                                 embed=train_embs),
                                       sampler=Data_sampler,
                                       batch_size=args.batch_size,
                                       drop_last=True,
@@ -108,7 +111,8 @@ if __name__ == '__main__':
         else:
             train_loader = DataLoader(DatasetClass(features=train_features,
                                                    wav_label=train_label,
-                                                   wav_index=train_index),
+                                                   wav_index=train_index,
+                                                   embed=train_embs),
                                       batch_size=args.batch_size,
                                       drop_last=True,
                                       shuffle=True,
@@ -117,7 +121,8 @@ if __name__ == '__main__':
 
         val_loader = DataLoader(DatasetClass(wav_label=test_label,
                                              features=test_features,
-                                             wav_index=test_index),
+                                             wav_index=test_index,
+                                             embed=test_embs),
                                 batch_size=args.batch_size // 4,
                                 shuffle=False,
                                 pin_memory=True,
@@ -142,12 +147,8 @@ if __name__ == '__main__':
         logging.info("# Optimizer = " + str(optimizer))
 
         # ========================/ 开始训练 /========================== #
-        train_test(model=MyModel,
-                   train_loader=train_loader,
-                   val_loader=val_loader,
-                   optimizer=optimizer,
-                   args=args)
-    # ========================/ 五折均值 /========================== #
+        train_val(model=MyModel, train_loader=train_loader, val_loader=val_loader, optimizer=optimizer, args=args)
+        # ========================/ 五折均值 /========================== #
         args.fold_res.append(args.fold_best_ACC)
-        args.fold_best_ACC=0
+        args.fold_best_ACC = 0
     logging.info(fr"# Average Fold ACC = {np.mean(args.fold_res):.2%}")
