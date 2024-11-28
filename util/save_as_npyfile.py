@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from dataAugmentation import data_Auge
+from utils_specAugmentation import data_Auge
 from util.backup.BEATs_def import get_wav_data
 
 # ========================/ parameteres define /========================== #
