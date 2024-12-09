@@ -55,12 +55,12 @@ def compare_strings(x, y):
 
 def find_patient_files(data_folder):
     # Find patient files.
-
+    filenames = list()
     for f in sorted(os.listdir(data_folder)):
         root, extension = os.path.splitext(f)
         if not root.startswith('.') and extension == '.txt':
             filename = os.path.join(data_folder, f)
-            # filenames.append(filename)
+            filenames.append(filename)
 
     # To help with debugging, sort numerically if the filenames are integers.
     # roots = [os.path.split(filename)[1][:-4] for filename in filenames]
@@ -68,7 +68,7 @@ def find_patient_files(data_folder):
     #     filenames = sorted(filenames, key=lambda filename: int(
     #         os.path.split(filename)[1][:-4]))
 
-    return filename
+    return filenames
 
 
 # Load patient data as a string.
@@ -222,13 +222,14 @@ def get_sex(data):
 
 
 def get_height(data):
-    height = None
+    height = 0
     for l in data.split('\n'):
         if l.startswith('#Height:'):
             try:
-                height = float(l.split(': ')[1].strip())
+                height = float(0 if l.split(': ')[1].strip()=="nan" else l.split(': ')[1].strip())
+
             except:
-                pass
+                height=0
     return height
 
 
@@ -240,7 +241,7 @@ def get_weight(data):
     for l in data.split('\n'):
         if l.startswith('#Weight:'):
             try:
-                weight = float(l.split(': ')[1].strip())
+                weight = float(0 if l.split(': ')[1].strip()=="nan" else l.split(': ')[1].strip())
             except:
                 pass
     return weight
