@@ -25,20 +25,49 @@ from src.utils.utils import (
 
 class MurmurMTL:
 
-    def __init__(self,config,x):
+    def __init__(self, config, rank=0):
+        self.rank = rank
         self.config = config
-        self.x = x
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = ModelMTL(self.config.get_config_dict())
-        self.model.to(self.device)
-        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=self.config.get_config_dict()['learning_rate'])
-        self.loss_func = nn.BCELoss()
-        self.train_loader = DataLoader(self.x, batch_size=self.config.get_config_dict()['batch_size'], shuffle=True)
-        self.test_loader = DataLoader(self.x, batch_size=self.config.get_config_dict()['batch_size'], shuffle=False)
-        self.train_loss = []
-        self.test_loss = []
-        self.train_auc = []
-        self.test_auc = []
+        self.config["rank"] = rank
+        self.distribute = config["n_gpu"] > 1
+        self.task_num = len(config["task_types"])
+        self.loss_fns = [get_loss_func(task_type) for task_type in config["task_types"]]
+        self.evaluate_fns = [get_metric_func(task_type) for task_type in config["task_types"]]
+        self.early_stop_patience = config["earlystop_patience"]
+        self.early_stop_counter = 0
+        self.val_per_epoch = config["val_per_epoch"]
+        self.full_arch_train_epoch_idx = config["warmup_epochs"]
+        self.fine_tune_epoch_idx = config["warmup_epochs"] + config["full_arch_train_epochs"]
+        (
+            self.result_path,
+            self.log_path,
+            self.ckpt_path,
+            self.viz_path,  # tensorboard path
+        ) = self._init_files(config)
+        (
+            self.device,
+            self.list_ids,
+        ) = self._init_device(rank, config)
+        (
+            self.train_loader,
+            self.val_loader,
+            self.test_loader,
+            self.features,
+        ) = self._init_dataloader(config)
+        (
+            self.net,
+            self.best_model_weights,
+        ) = self._init_model(config)
+        (
+            self.optimizer,
+            self.arch_optimizer,
+            self.scheduler,
+            self.from_epoch,
+            self.best_val_auc,
+            # self.best_test_auc,
+        ) = self._init_optim(config)
+        self.logger = self._init_logger()
+        print(config)
 
     def fit(self, ):
         """ The normal train loop: train loop: train-val and save model val-cc increases

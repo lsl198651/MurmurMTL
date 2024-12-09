@@ -48,5 +48,5 @@ def cover2embedings(data_folder, csv_path):
 
 
 if __name__ == '__main__':
-    data_folder = r'D:\Shilong\murmur\Dataset\PCGdataset\test_data'
+    data_folder = r'D:\Shilong\new_murmur\Dataset\PCGdataset\test_data'
     cover2embedings(data_folder, csv_path='test_data')
