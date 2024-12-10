@@ -364,9 +364,7 @@ class MurmurMTL:
                     "params": self.net.weight_parameters()
                 },
             ]
-        optimizer = get_instance(
-            torch.optim, "optimizer", config, params=params_dict_list,
-        )
+        optimizer = get_instance(torch.optim, "optimizer", config, params=params_dict_list, )
         # arch params
         arch_params_dict_list = [
             {

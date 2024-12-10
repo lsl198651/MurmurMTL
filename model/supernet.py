@@ -3,14 +3,14 @@ import copy
 import torch
 import torch.nn as nn
 
-from src.models.basic.layers import FM, MLP, EmbeddingLayer
-from src.models.nas import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp
-
+from model.modules import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp
+from model.layers import FM, MLP, EmbeddingLayer
 
 class SuperNet(BasicNetwork):
     def __init__(
         self,
         features,
+        embedding,
         embedding_dim,
         task_types,
         n_experts,
@@ -35,6 +35,7 @@ class SuperNet(BasicNetwork):
             dropout (float): dropout ratio.
             tower_layers (List[int]): hidden sizes of tower layers.
             expert_candidate_ops (List[str]): ...
+            embedding:
         """
         super().__init__()
 
@@ -45,7 +46,7 @@ class SuperNet(BasicNetwork):
 
         # embedding layer and feature preprocessing
         self.features = features
-        self.embedding = EmbeddingLayer(features)
+        self.embedding = EmbeddingLayer(embedding)
         self.embedding_dim = embedding_dim
         self.n_feilds = len(self.embedding.embed_dict)
         self.n_tasks = len(task_types)

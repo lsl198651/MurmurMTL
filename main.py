@@ -1,16 +1,26 @@
+# -*- coding: utf-8 -*-
 import argparse
 import logging
+import sys
+from pathlib import Path
 
 import numpy as np
 import torch.profiler
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
-from model.senet.my_resnet import My_ResNet
+from model import supernet
 from trainAndTest.train_eval import train_val
 from util.utils_dataloader import fold5_dataloader
 from util.utils_datasetClass import DatasetClass, DatasetMTL
 from util.utils_train import logger_init
+
+sys.dont_write_bytecode = True
+PROJ_PATH = Path(__file__).parent.parent.as_posix()
+sys.path.append(PROJ_PATH)
+print(sys.path)
+
+from configs.config import Config
 
 if __name__ == '__main__':
     # ========================/ 函数入口 /========================== #
@@ -51,11 +61,20 @@ if __name__ == '__main__':
                         default="logmel + se_resnet6v2  4k  samplerWeight[1,5] lr=0.05,32,64 channel reduction=8 "
                                 "high_freq=1000, window_type='hanning'")
     args = parser.parse_args()
+    config = Config(r"D:\Shilong\new_murmur\01_code\AutoMTL\configs\default_nas.yaml", VAR_DICT).get_config_dict()
 
     all_list = ['0', '1', '2', '3', '4']
 
     # ========================/ 选择模型 /========================== #
-    MyModel = My_ResNet(layers=[1, 1])
+    MyModel = supernet.SuperNet(features=None, embedding=emb, embedding_dim=config["embedding_dim"],
+                                task_types=config["task_types"], n_experts=config["model"]["kwargs"]["n_experts"],
+                                n_expert_layers=config["model"]["kwargs"]["n_expert_layers"],
+                                n_layers=config["model"]["kwargs"]["expert_module"]["n_layers"],
+                                in_features=config["model"]["kwargs"]["expert_module"]["in_features"],
+                                out_features=config["model"]["kwargs"]["expert_module"]["out_features"],
+                                tower_layers=config["model"]["kwargs"]["tower_layers"],
+                                dropout=config["model"]["kwargs"]["dropout"],
+                                expert_candidate_ops=config["model"]["kwargs"]["expert_module"]["ops"])
 
     # ========================/ 打印日志 /========================== #
     if args.isTry:
@@ -102,27 +121,27 @@ if __name__ == '__main__':
             train_loader = DataLoader(DatasetMTL(features=train_features,
                                                  wav_label=train_label,
                                                  wav_index=train_index,
-                                                 embed=train_embs),
+                                                 embedded=train_embs),
                                       sampler=Data_sampler,
                                       batch_size=args.batch_size,
                                       drop_last=True,
                                       pin_memory=True,
                                       num_workers=4)
         else:
-            train_loader = DataLoader(DatasetClass(features=train_features,
+            train_loader = DataLoader(DatasetMTL(features=train_features,
                                                    wav_label=train_label,
                                                    wav_index=train_index,
-                                                   embed=train_embs),
+                                                   embedded=train_embs),
                                       batch_size=args.batch_size,
                                       drop_last=True,
                                       shuffle=True,
                                       pin_memory=True,
                                       num_workers=4)
 
-        val_loader = DataLoader(DatasetClass(wav_label=test_label,
+        val_loader = DataLoader(DatasetMTL(wav_label=test_label,
                                              features=test_features,
                                              wav_index=test_index,
-                                             embed=test_embs),
+                                             embedded=test_embs),
                                 batch_size=args.batch_size // 4,
                                 shuffle=False,
                                 pin_memory=True,
