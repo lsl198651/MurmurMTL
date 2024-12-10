@@ -11,14 +11,14 @@ import torch
 import yaml
 from loguru import logger
 from numpy.typing import NDArray
-from src.datasets.dataset_utils import DataGenerator
 from src.models.basic.features import DenseFeature, SparseFeature
-from src.models.nas import SuperNet
 from src.utils.utils import (
     get_loss_func, get_metric_func, get_instance, get_local_time, create_dirs, init_seed,
     GradualWarmupScheduler, SaveType, TensorboardWriter,
 )
 
+from model import SuperNet
+from util.dataset_utils import DataGenerator
 from util.utils import *
 
 
@@ -47,12 +47,12 @@ class MurmurMTL:
             self.device,
             self.list_ids,
         ) = self._init_device(rank, config)
-        (
-            self.train_loader,
-            self.val_loader,
-            self.test_loader,
-            self.features,
-        ) = self._init_dataloader(config)
+        # (
+        #     self.train_loader,
+        #     self.val_loader,
+        #     self.test_loader,
+        #     self.features,
+        # ) = self._init_dataloader(config)
         (
             self.net,
             self.best_model_weights,
@@ -373,33 +373,14 @@ class MurmurMTL:
                 "params": self.net.architecture_parameters()
             },
         ]
-        arch_optimizer = get_instance(
-            torch.optim, "arch_optimizer", config, params=arch_params_dict_list,
-        )
-        scheduler = GradualWarmupScheduler(
-            optimizer, self.config
-        )  # if config['warmup']==0, scheduler will be a normal lr_scheduler, jump into this class for details
+        arch_optimizer = get_instance(torch.optim, "arch_optimizer", config, params=arch_params_dict_list, )
+        scheduler = GradualWarmupScheduler(optimizer, self.config)
+        # if config['warmup']==0, scheduler will be a normal lr_scheduler, jump into this class for details
         print(optimizer)
         print(arch_optimizer)
         from_epoch = -1
         best_val_auc = np.zeros(self.task_num)
-        if self.config["resume"]:
-            resume_path = os.path.join(
-                self.config["resume_path"], "checkpoints", "model_last.pth"
-            )
-            print(
-                "load the optimizer, lr_scheduler and epoch checkpoints dict from {}.".format(resume_path)
-            )
-            all_state_dict = torch.load(resume_path, map_location="cpu")
-            state_dict = all_state_dict["optimizer"]
-            optimizer.load_state_dict(state_dict)
-            state_dict = all_state_dict["arch_optimizer"]
-            arch_optimizer.load_state_dict(state_dict)
-            state_dict = all_state_dict["lr_scheduler"]
-            scheduler.load_state_dict(state_dict)
-            from_epoch = all_state_dict["epoch"]
-            best_val_auc = all_state_dict["best_val_auc"]
-            print("model resume from the epoch {}".format(from_epoch))
+
         return optimizer, arch_optimizer, scheduler, from_epoch, best_val_auc
 
     def _init_logger(self, is_train=True):
