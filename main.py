@@ -3,6 +3,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from run_MTL import VAR_DICT
 
 import numpy as np
 import torch.profiler
