@@ -12,7 +12,7 @@ from torch.utils.data.sampler import WeightedRandomSampler
 from model import supernet
 from trainAndTest.train_eval import train_val
 from util.utils_dataloader import fold5_dataloader
-from util.utils_datasetClass import DatasetClass, DatasetMTL
+from util.utils_datasetClass import DatasetMTL
 from util.utils_train import logger_init
 
 sys.dont_write_bytecode = True
@@ -64,9 +64,48 @@ if __name__ == '__main__':
     config = Config(r"D:\Shilong\new_murmur\01_code\AutoMTL\configs\default_nas.yaml", VAR_DICT).get_config_dict()
 
     all_list = ['0', '1', '2', '3', '4']
+    # ========================/ 加载数据集 /========================== #
+    train_features, train_label, train_index, test_features, test_label, test_index = fold5_dataloader(
+        args.set_path, args.train_fold, args.test_fold, args.data_augmentation, args.set_name)
+    # todo 补充加入的嵌入数据，train_embs=[],test_embs=[]
+    train_embs = 0
+    test_embs = 0
+    # ========================/ setup loader /========================== #
+    if args.samplerWeight:
+        weights = [5 if label == 1 else 1 for label in train_label]
+        Data_sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
+        train_loader = DataLoader(DatasetMTL(features=train_features,
+                                             wav_label=train_label,
+                                             wav_index=train_index,
+                                             embedded=train_embs),
+                                  sampler=Data_sampler,
+                                  batch_size=args.batch_size,
+                                  drop_last=True,
+                                  pin_memory=True,
+                                  num_workers=4)
+    else:
+        train_loader = DataLoader(DatasetMTL(features=train_features,
+                                             wav_label=train_label,
+                                             wav_index=train_index,
+                                             embedded=train_embs),
+                                  batch_size=args.batch_size,
+                                  drop_last=True,
+                                  shuffle=True,
+                                  pin_memory=True,
+                                  num_workers=4)
+
+    val_loader = DataLoader(DatasetMTL(wav_label=test_label,
+                                       features=test_features,
+                                       wav_index=test_index,
+                                       embedded=test_embs),
+                            batch_size=args.batch_size // 4,
+                            shuffle=False,
+                            pin_memory=True,
+                            num_workers=4)
 
     # ========================/ 选择模型 /========================== #
-    MyModel = supernet.SuperNet(features=None, embedding=emb, embedding_dim=config["embedding_dim"],
+    MyModel = supernet.SuperNet(features=None,
+                                embedding_dim=config["embedding_dim"],
                                 task_types=config["task_types"], n_experts=config["model"]["kwargs"]["n_experts"],
                                 n_expert_layers=config["model"]["kwargs"]["n_expert_layers"],
                                 n_layers=config["model"]["kwargs"]["expert_module"]["n_layers"],
@@ -108,44 +147,6 @@ if __name__ == '__main__':
         else:
             optimizer = torch.optim.AdamW(MyModel.parameters(),
                                           lr=args.learning_rate)
-        # ========================/ 加载数据集 /========================== #
-        train_features, train_label, train_index, test_features, test_label, test_index = fold5_dataloader(
-            args.set_path, args.train_fold, args.test_fold, args.data_augmentation, args.set_name)
-        # todo 补充加入的嵌入数据，train_embs=[],test_embs=[]
-        train_embs = 0
-        test_embs = 0
-        # ========================/ setup loader /========================== #
-        if args.samplerWeight:
-            weights = [5 if label == 1 else 1 for label in train_label]
-            Data_sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-            train_loader = DataLoader(DatasetMTL(features=train_features,
-                                                 wav_label=train_label,
-                                                 wav_index=train_index,
-                                                 embedded=train_embs),
-                                      sampler=Data_sampler,
-                                      batch_size=args.batch_size,
-                                      drop_last=True,
-                                      pin_memory=True,
-                                      num_workers=4)
-        else:
-            train_loader = DataLoader(DatasetMTL(features=train_features,
-                                                   wav_label=train_label,
-                                                   wav_index=train_index,
-                                                   embedded=train_embs),
-                                      batch_size=args.batch_size,
-                                      drop_last=True,
-                                      shuffle=True,
-                                      pin_memory=True,
-                                      num_workers=4)
-
-        val_loader = DataLoader(DatasetMTL(wav_label=test_label,
-                                             features=test_features,
-                                             wav_index=test_index,
-                                             embedded=test_embs),
-                                batch_size=args.batch_size // 4,
-                                shuffle=False,
-                                pin_memory=True,
-                                num_workers=4)
 
         # ========================/ 计算数据集大小 /========================== #
         train_present_size = np.sum(train_label == 1)
