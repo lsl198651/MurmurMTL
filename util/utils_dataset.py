@@ -9,7 +9,7 @@ import soundfile
 
 from util.helper_code import *
 from util.utils_features import get_features_mod, get_logmel_feature
-from utils_saveInfo import save_as_txt
+from util.utils_saveInfo import save_as_txt
 
 def mkdir(path):
     # judge weather make dir or not
@@ -222,7 +222,7 @@ def duration_div(
     labels = np.full(len(recording) // 80, 0)
     print(f'lableslen:{len(labels)},recordings_len:{len(recording)}')
     for (start, end, tag) in index_file:
-        labels[int(start * 1000 // label_frame):int(end * 1000 // label_frame)] = int(tag)
+        labels[int(float(start) * 1000 // label_frame):int(float(end) * 1000 // label_frame)] = int(tag)
 
     print(labels)
 
@@ -230,7 +230,7 @@ def duration_div(
     start = float(index_file[0][0]) * fs
     end = float(index_file[-1][1]) * fs
     recording_buff = recording[int(start): int(end)]  # 准备切割的数据
-    labels_buff = labels[int(start * 1000 // label_frame): int(end * 1000 // label_frame)]  # 准备切割的标记
+    labels_buff = labels[int(float(index_file[0][0]) * 1000 // label_frame): int(float(index_file[-1][1]) * 1000 // label_frame)]  # 准备切割的标记
     fs = int(fs)
     # 计算每个片段的样本数
     samples_per_recording = duration_len * fs
@@ -248,7 +248,7 @@ def duration_div(
     tags = []
     for tag_start in np.arange(0, len(labels_buff), points_per_tag):
         tag_end = tag_start + points_per_tag
-        new_tags = recording_buff[tag_start:tag_end]
+        new_tags = labels_buff[tag_start:tag_end]
         tags.append(new_tags)
 
     # segments.pop()
@@ -281,10 +281,10 @@ def duration_div(
                 tag_segment = tag_segment[:points_per_tag]
         print(f"wav_segment len: + {str(len(wav_segment))},tag len: {len(tag_segment)}")
 
-        file_path = state_path + "{}_{}_{}_{}_{}_{}.wav".format(id_pos, str(duration_len) + "s", num, murmur_type,
+        file_path = state_path + "{}_{}_{}_{}_{}_{}".format(id_pos, str(duration_len) + "s", num, murmur_type,
                                                                 "None", human_feat)
-        soundfile.write(f" {file_path}.wav", wav_segment, fs)
-        save_as_txt(tag_segment,f"{file_path}.txt")
+        soundfile.write(rf"{file_path}.wav", wav_segment, fs)
+        save_as_txt(tag_segment,rf"{file_path}.txt")
 
 
 # get patient id from csv file
