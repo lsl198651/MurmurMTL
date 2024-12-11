@@ -53,6 +53,7 @@ def get_half_indices_true(start, end, mode='first'):
     elif mode == 'none':
         return []  # Return an empty range, so no indices will be set to 1
 
+
 def construct_new_annotations(original_annotations, murmur_type):
     new_annotations = [0] * len(original_annotations)
     i = 0
