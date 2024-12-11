@@ -8,15 +8,21 @@ from util.utils_dataset import *
 # ========================/ code executive /========================== #
 # ==================================================================== #
 if __name__ == '__main__':
-    csv_path = r"D:\Shilong\new_murmur\PCGdataset\training_data.csv"
-    # csv_path = r"D:\Shilong\murmur\Dataset\PCGdataset\validation_data.csv"
+    csv_path = r"E:\Shilong\00_PCGDataset\training_data.csv"
+    csv_source_path = r"D:\Shilong\new_murmur\02_dataset\00_s1s2_4k"
+    # TODO 修改此处的root_path
+    root_path = r"E:\Shilong\02_dataset\00_5s_4k"
+    wav_len = 5  # 按照wav_len s切割
+    is_states = False  # 是否按照state切割据集
+    random_flod = True  # 是否随机分折
+    # TODO 修改此处的src_path
+    src_path = r"E:\Shilong\00_PCGDataset\training_data"
+    # data_set(root_path, is_states, wav_len)
 
     # get dataset tag from table
     row_line = csv_reader_row(csv_path, 0)
     tag_list = [row_line.index("Patient ID"), row_line.index("Murmur"), row_line.index("Murmur locations"),
                 row_line.index("Systolic murmur timing"), row_line.index("Diastolic murmur timing")]
-
-    # get index for 'Patient ID' and 'Outcome'
 
     # for tag_index in tag_list:
     id_data = csv_reader_cl(csv_path, tag_list[0])
@@ -24,10 +30,7 @@ if __name__ == '__main__':
     Murmur_locations = csv_reader_cl(csv_path, tag_list[2])
     Systolic_murmur_timing = csv_reader_cl(csv_path, tag_list[3])
     Diastolic_murmur_timing = csv_reader_cl(csv_path, tag_list[4])
-    # TODO 修改此处的root_path
-    root_path = r"D:\Shilong\new_murmur\02_dataset\02_4s_4k"
-    # root_path = r"D:\Shilong\murmur\01_dataset\validset_4k"
-    # data_set(root_path, is_by_state=True)
+
     mkdir(root_path)
     # save data to csv file
     pd.DataFrame(Murmur_locations).to_csv(root_path + r"\Murmur_locations.csv", index=False, header=False)
@@ -49,26 +52,31 @@ if __name__ == '__main__':
     # save patient id as csv
     pd.DataFrame(data=absent_patient_id, index=None).to_csv(root_path + r"\absent_id.csv", index=False, header=False)
     pd.DataFrame(data=present_patient_id, index=None).to_csv(root_path + r"\patient_id.csv", index=False, header=False)
-    # 对Present和Absent分五折
-    fold_absent = fold_divide(absent_patient_id, fold_num=5)
-    fold_present = fold_divide(present_patient_id, fold_num=5)
-    # 对Present和Absent分五折
-    # 分别保存每折的id
-    for k, v in fold_absent.items():
-        pd.DataFrame(data=v, index=None).to_csv(root_path + r"\absent_fold_" + str(k) + ".csv", index=False,
-                                                header=False)
-    for k, v in fold_present.items():
-        pd.DataFrame(data=v, index=None).to_csv(root_path + r"\present_fold_" + str(k) + ".csv", index=False,
-                                                header=False)
+    if random_flod:
+        # 对Present和Absent分五折
+        fold_absent = fold_divide(absent_patient_id, fold_num=5)
+        fold_present = fold_divide(present_patient_id, fold_num=5)
+        # 对Present和Absent分五折
+        # 分别保存每折的id
+        for k, v in fold_absent.items():
+            pd.DataFrame(data=v, index=None).to_csv(root_path + r"\absent_fold_" + str(k) + ".csv", index=False,
+                                                    header=False)
+        for k, v in fold_present.items():
+            pd.DataFrame(data=v, index=None).to_csv(root_path + r"\present_fold_" + str(k) + ".csv", index=False,
+                                                    header=False)
+    else:
+        for k in range(5):
+            shutil.copy(csv_source_path + r"\absent_fold_" + str(k) + ".csv", root_path + "\\")
+            shutil.copy(csv_source_path + r"\present_fold_" + str(k) + ".csv", root_path + "\\")
+        fold_absent = read_fold_csv(root_path, "absent")
+        fold_present = read_fold_csv(root_path, "present")
 
     # define path options
     position = ["_AV", "_MV", "_PV", "_TV"]
     murmur_class = ["Absent", "Present"]
     period = ["s1", "systolic", "s2", "diastolic"]
 
-    # TODO 修改此处的src_path
-    # src_path = r"D:\Shilong\murmur\dataset_all\training_data"
-    src_path = r"D:\Shilong\new_murmur\PCGdataset\training_data"
+
     folder_path = root_path + "\\"
 
     # 将wav文件和tsv文件copy到目标文件夹
@@ -86,10 +94,10 @@ if __name__ == '__main__':
     # 切数据，命名格式为：id+pos+state+num
     # absent
     period_div(folder_path, murmur_class[0] + "\\", absent_patient_id, position, id_data, Murmur_locations,
-               Systolic_murmur_timing, Diastolic_murmur_timing)
+               Systolic_murmur_timing, Diastolic_murmur_timing, segments_len=wav_len, is_state_cut=is_states)
     # present
     period_div(folder_path, murmur_class[1] + "\\", present_patient_id, position, id_data, Murmur_locations,
-               Systolic_murmur_timing, Diastolic_murmur_timing)
+               Systolic_murmur_timing, Diastolic_murmur_timing, segments_len=wav_len, is_state_cut=is_states)
 
     absent_train_id_path = root_path + r"\absent_train_id.csv"
     absent_test_id_path = root_path + r"\absent_test_id.csv"
@@ -127,15 +135,4 @@ if __name__ == '__main__':
         for murmur_class in ['absent', 'present']:
             src_fold_path = src_fold_root_path + "\\" + murmur_class + "\\"
 
-    data_set(root_path, is_by_state=True)
-
-    output_path = root_path + r"\npyFile_padded\organized_data"
-    mkdir(output_path)
-    data_path = root_path + r"\npyFile_padded\index_files01_norm"
-    for root, dir, file in os.walk(data_path):
-        for file in file:
-            if file.endswith(".csv"):
-                print('processing file:', file)
-                get_id_position_org(root, output_path, file)
-            # print('processing file:', file)
-            # a = csv_to_dict(root, file)
+    data_set(root_path, is_states, wav_len)

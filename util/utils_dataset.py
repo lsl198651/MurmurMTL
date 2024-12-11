@@ -116,7 +116,9 @@ def period_div(
         murmur_locations,
         systolic_murmur_timing,
         diastolic_murmur_timing,
-        is_state=False
+        segments_len,
+        is_state_cut=False
+
 ):
     """
     按照时相切割
@@ -147,20 +149,21 @@ def period_div(
                 murmur_type, systolic_murmur, diastolic_murmur, systolic_state, diastolic_state = "Absent", "Absent", "Absent", "nan", "nan"
 
             if os.path.exists(tsv_path):
-                if is_state:
+                if is_state_cut:
                     state_div(tsv_path, wav_path, dir_path + "\\", patient_id + pos, systolic_murmur, diastolic_murmur,
                               systolic_state, diastolic_state, human_feat)
                 else:
-                    duration_div(tsv_path, wav_path, dir_path + "\\", patient_id + pos, murmur_type)
+                    duration_div(tsv_path, wav_path, dir_path + "\\", patient_id + pos, murmur_type, segments_len,
+                                 human_feat=human_feat)
 
 
 def state_div(
-        tsv_name,
-        wav_name,
-        state_path,
-        index,
-        systolic_murmur,
-        diastolic_murmur,
+        tsvName,
+        wavName,
+        statePath,
+        id_pos,
+        SystolicMurmur,
+        diastolicMurmur,
         systolic_state,
         diastolic_state,
         human_feat
@@ -168,31 +171,31 @@ def state_div(
     """
     按照时长切割
     """
-    index_file = index_load(tsv_name)
-    recording, fs = librosa.load(wav_name, sr=4000)
+    index_file = index_load(tsvName)
+    recording, fs = librosa.load(wavName, sr=4000)
     num = 0
 
     for i in range(index_file.shape[0] - 3):
         if index_file[i][2] == "1" and index_file[i + 3][2] == "4":
-            start_index1 = float(index_file[i][0]) * fs
-            end_index1 = float(index_file[i + 1][1]) * fs
-            start_index2 = float(index_file[i + 2][0]) * fs
-            end_index2 = float(index_file[i + 3][1]) * fs
+            startIndex1 = float(index_file[i][0]) * fs
+            endIndex1 = float(index_file[i + 1][1]) * fs
+            startIndex2 = float(index_file[i + 2][0]) * fs
+            endIndex2 = float(index_file[i + 3][1]) * fs
             num = num + 1
             print("==========state_div===========")
-            buff1 = recording[int(start_index1): int(end_index1)]  # 字符串索引切割
-            buff2 = recording[int(start_index2): int(end_index2)]  # 字符串索引切割
+            buff1 = recording[int(startIndex1): int(endIndex1)]  # 字符串索引切割
+            buff2 = recording[int(startIndex2): int(endIndex2)]  # 字符串索引切割
             print("buff1 len: " + str(len(buff1)), "buff2 len: " + str(len(buff2)))
             soundfile.write(
-                state_path
-                + f"{index}_s1+Systolic_{num}_{systolic_murmur}_{systolic_state}_{human_feat}.wav",
+                statePath
+                + f"{id_pos}_s1+Systolic_{num}_{SystolicMurmur}_{systolic_state}_{human_feat}.wav",
                 buff1,
                 fs
             )
             # 切舒张期
             soundfile.write(
-                state_path
-                + f"{index}_s2+Diastolic_{num}_{diastolic_murmur}_{diastolic_state}_{human_feat}.wav",
+                statePath
+                + f"{id_pos}_s2+Diastolic_{num}_{diastolicMurmur}_{diastolic_state}_{human_feat}.wav",
                 buff2,
                 fs,
 
@@ -205,7 +208,8 @@ def duration_div(
         state_path,
         id_pos,
         murmur_type,
-        spilt_len=4
+        duration_len,
+        human_feat
 ):
     """
     按照4s切片
@@ -216,23 +220,39 @@ def duration_div(
     start = float(index_file[0][0]) * fs
     end = float(index_file[-1][1]) * fs
     buff = recording[int(start): int(end)]  # 要切割的数据
-
+    fs = int(fs)
     # 计算每个片段的样本数
-    samples_per_segment = spilt_len * fs
+    samples_per_segment = duration_len * fs
     # 切割音频数据
     segments = []
     for start in np.arange(0, len(buff), samples_per_segment):
         end = start + samples_per_segment
-        segment = buff[start:end]
-        segments.append(segment)
+        new_segment = buff[start:end]
+        segments.append(new_segment)
 
-    segments.pop()
-    for i, segment in enumerate(segments):
+    # segments.pop()
+    for num, new_segment in enumerate(segments):
         print("==========duration_div===========")
+        wav_segment = new_segment
+        print("new_segment len: " + str(len(new_segment)))
+        if len(wav_segment) < samples_per_segment:
+            repeatTimes = samples_per_segment // len(wav_segment) - 1
+            for i in range(repeatTimes):
+                wav_segment = np.hstack((wav_segment, new_segment))
+            if len(wav_segment) < samples_per_segment:
+                wav_segment = np.pad(
+                    wav_segment,
+                    (0, samples_per_segment - len(wav_segment)),
+                    "constant",
+                    constant_values=(0, 0)
+                )
+            else:
+                wav_segment = new_segment[:samples_per_segment]
+        print("wav_segment len: " + str(len(wav_segment)))
         soundfile.write(
             state_path
-            + "{}_{}_{}_{}_{}.wav".format(id_pos, str(spilt_len) + "s", i, murmur_type, "none"),
-            segment,
+            + "{}_{}_{}_{}_{}_{}.wav".format(id_pos, str(duration_len) + "s", num, murmur_type, "None", human_feat),
+            wav_segment,
             fs
         )
 
@@ -270,9 +290,21 @@ def fold_divide(data, fold_num=5):
     return flod5
 
 
+def read_fold_csv(root_path, murmur_type):
+    fold = {}
+    for k in range(5):
+        csv_path = root_path + rf"\{murmur_type}_fold_" + str(k) + ".csv"
+        # 读取每个折的文件并存储id
+        fold[k] = []
+        with open(csv_path, 'r') as csvfile:
+            csvreader = csv.reader(csvfile)
+            for row in csvreader:
+                # 假设每行只有一个id
+                fold[k].append(row[0])
+    return fold
+
+
 # copy data to folder
-
-
 def copy_states_data(patient_id, folder, type, murmur):
     traget_path = folder + type + murmur
     if not os.path.exists(traget_path):
@@ -290,9 +322,8 @@ def copy_states_data(patient_id, folder, type, murmur):
                     print("dir not exist")
 
 
-def data_set(root_path, is_by_state):
+def data_set(root_path, is_by_state, wav_len):
     """数据增强，包括时间拉伸和反转"""
-    # root_path = r"D:\Shilong\murmur\01_dataset\06_new5fold"
     npy_path_padded = root_path + r"\npyFile_padded\npy_files01_norm"
     index_path = root_path + r"\npyFile_padded\index_files01_norm"
     mkdir(npy_path_padded)
@@ -305,9 +336,11 @@ def data_set(root_path, is_by_state):
         for folder in os.listdir(src_fold_root_path):
             dataset_path = os.path.join(src_fold_root_path, folder)
             if k == 0 and folder == "absent":
-                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, data_id=0)  # absent
+                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, wav_len,
+                                                                       data_id=0)  # absent
             else:
-                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, data_id)  # absent
+                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, wav_len,
+                                                                       data_id)  # absent
             mel_list = []
             for i in range(len(wav)):
                 mel = get_logmel_feature(wav[i])
@@ -321,10 +354,20 @@ def data_set(root_path, is_by_state):
             absent_train_dic = zip(index, names, feat)
             pd.DataFrame(absent_train_dic).to_csv(index_path + f"\\fold{k}_{folder}_disc.csv", index=False,
                                                   header=False)
+
+    output_path = root_path + r"\npyFile_padded\organized_data"
+    mkdir(output_path)
+    data_path = root_path + r"\npyFile_padded\index_files01_norm"
+    for root, dir, file in os.walk(data_path):
+        for file in file:
+            if file.endswith(".csv"):
+                print('processing file:', file)
+                get_id_position_org(root, output_path, file)
+
     print("data set is done!")
 
 
-def get_wav_data(dir_path, is_by_state, data_id=0):
+def get_wav_data(dir_path, is_by_state, time, data_id=0):
     """返回数据文件"""
     wav = []
     label = []
@@ -333,7 +376,7 @@ def get_wav_data(dir_path, is_by_state, data_id=0):
     feat = []
     # 设置采样率为4k，时间长度为4
     fs = 4000
-    time = 4
+
     if is_by_state:
         data_length = 1300
     else:
@@ -351,7 +394,7 @@ def get_wav_data(dir_path, is_by_state, data_id=0):
                 y, sr = librosa.load(wav_path, sr=4000)
                 # TODO 采样率:4k
                 y_4k_norm = wav_normalize(y)  # 归一化
-                # 数据裁剪
+                # # 数据裁剪
                 if y_4k_norm.shape[0] < data_length:
                     y_4k_norm = np.pad(
                         y_4k_norm,

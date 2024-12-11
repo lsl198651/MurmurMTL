@@ -3,13 +3,6 @@ import csv
 import numpy as np
 import wave
 
-# 路径设置
-tsv_files_path = 'D:\project\LHH_MTL\MLT_data1234 _2\processdata/test'  # 替换为实际的TSV文件路径
-audio_files_path = 'D:\project\LHH_MTL\MLT_data1234 _2\processdata/test'  # 替换为实际的音频文件路径
-npsavefile_seg = 'D:\project\LHH_MTL\MLT_data1234 _2\labels/test_labels.npy'
-npsavefile_noi = 'D:\project\LHH_MTL\MLT_data1234 _2\labels2/test_labels.npy'
-
-time_len = 10
 
 def replace_zeros(arr):
     # 将数组展平为一维，以便于遍历
@@ -52,6 +45,26 @@ def get_half_indices_true(start, end, mode='first'):
         return range(start + half_length, end)
     elif mode == 'none':
         return []  # Return an empty range, so no indices will be set to 1
+
+def my_construct_new_annotations(original_annotations, murmur_type):
+    new_annotations = [0] * len(original_annotations)
+    i = 0
+    while i < len(original_annotations):
+        start = i
+        label = original_annotations[i]
+        while i < len(original_annotations) and original_annotations[i] == label:
+            i += 1
+        end = i
+
+        # Handle the annotations based on murmur type and label
+        if murmur_type == 'Absent':
+            continue
+        else:
+            if label == 2:
+                for j in get_half_indices(start, end, 'first'):
+                    new_annotations[j] = 1
+
+    return new_annotations
 
 def construct_new_annotations(original_annotations, murmur_type):
     new_annotations = [0] * len(original_annotations)
@@ -244,8 +257,8 @@ def label_audio_file(audio_file, segments):
 
 # 主处理函数
 def process_files(tsv_files_path, audio_files_path):
-    all_labels = []   #seg
-    all_labels2 = []  #noise
+    all_labels_seg = []   #seg
+    all_labels_mur = []  #noise
     tsv_files = sorted([f for f in os.listdir(tsv_files_path) if f.endswith('.tsv')])
     audio_files = sorted([f for f in os.listdir(audio_files_path) if f.endswith('.wav')])
 
@@ -255,26 +268,35 @@ def process_files(tsv_files_path, audio_files_path):
 
         for audio_file in audio_files:
             if audio_file.startswith(file_prefix):
-                murmur_type = audio_file.split('_')[2]  # Assuming the format is Number_Position_MurmurType_Number.wav
-                labels = label_audio_file(os.path.join(audio_files_path, audio_file), segments)
-                labels_noi = construct_new_annotations(labels, murmur_type)
-                all_labels.append(labels)
-                all_labels2.append(labels_noi)
+                filename = os.path.splitext(audio_file)[0]
+                murmur_type = filename.split('_')[-1]  # Assuming the format is Number_Position_MurmurType_Number.wav
+                labels = label_audio_file(audio_file, segments)
+                labels_noi = my_construct_new_annotations(labels, murmur_type)
+                all_labels_seg.append(labels)
+                all_labels_mur.append(labels_noi)
     # 将标签转换为矩阵
-    max_length = max(len(labels) for labels in all_labels)
-    labels_matrix = np.full((len(all_labels), max_length), 0)  # 用默认标签0填充
-    for i, labels in enumerate(all_labels):
+    max_length = max(len(labels) for labels in all_labels_seg)
+    labels_matrix = np.full((len(all_labels_seg), max_length), 0)  # 用默认标签0填充
+    for i, labels in enumerate(all_labels_seg):
         labels_matrix[i, :len(labels)] = labels
 
-    max_length2 = max(len(labels_noi) for labels_noi in all_labels2)
-    labels_matrix2 = np.full((len(all_labels2), max_length2), 0)  # 用默认标签0填充
-    for i, labels_noi in enumerate(all_labels2):
+    max_length2 = max(len(labels_noi) for labels_noi in all_labels_mur)
+    labels_matrix2 = np.full((len(all_labels_mur), max_length2), 0)  # 用默认标签0填充
+    for i, labels_noi in enumerate(all_labels_mur):
         labels_matrix2[i, :len(labels_noi)] = labels_noi
 
     return labels_matrix, labels_matrix2
 
 # 执行处理
 if __name__=="__main__":
+    # 路径设置
+    tsv_files_path = r'E:\Shilong\02_dataset\training_data'  # 替换为实际的TSV文件路径
+    audio_files_path = r'E:\Shilong\02_dataset\training_data'  # 替换为实际的音频文件路径
+    npsavefile_seg = r'E:\Shilong\02_dataset\test_labels_seg.npy'
+    npsavefile_noi = r'E:\Shilong\02_dataset\test_labels_murmur.npy'
+
+    time_len = 10
+
     all_labels_seg, all_labels_noi = process_files(tsv_files_path, audio_files_path)
     all_labels_seg = replace_zeros(all_labels_seg)
     np.save(npsavefile_seg, all_labels_seg)
