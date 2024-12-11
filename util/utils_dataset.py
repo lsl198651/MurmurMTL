@@ -9,7 +9,7 @@ import soundfile
 
 from util.helper_code import *
 from util.utils_features import get_features_mod, get_logmel_feature
-
+from utils_saveInfo import save_as_txt
 
 def mkdir(path):
     # judge weather make dir or not
@@ -144,6 +144,7 @@ def period_div(
                 systolic_murmur = "Absent" if systolic_state == "nan" else "Present"
                 # 没有 Diastolic murmur
                 diastolic_murmur = "Absent" if diastolic_state == "nan" else "Present"
+                murmur_type = f'{systolic_state}+{diastolic_state}'
             # 此听诊区没有杂音
             else:
                 murmur_type, systolic_murmur, diastolic_murmur, systolic_state, diastolic_state = "Absent", "Absent", "Absent", "nan", "nan"
@@ -169,7 +170,7 @@ def state_div(
         human_feat
 ):
     """
-    按照时长切割
+    按照识相切割
     """
     index_file = index_load(tsvName)
     recording, fs = librosa.load(wavName, sr=4000)
@@ -212,49 +213,78 @@ def duration_div(
         human_feat
 ):
     """
-    按照4s切片
+    按照固定时长切片
     切割长度为spilt_len s
     """
-    recording, fs = librosa.load(wav_name, sr=4000)
+    label_frame = 20  # 每label_frame 毫秒一个label
     index_file = index_load(tsv_name)
+    recording, fs = librosa.load(wav_name, sr=4000)
+    labels = np.full(len(recording) // 80, 0)
+    print(f'lableslen:{len(labels)},recordings_len:{len(recording)}')
+    for (start, end, tag) in index_file:
+        labels[int(start * 1000 // label_frame):int(end * 1000 // label_frame)] = int(tag)
+
+    print(labels)
+
+    # 从0开始切割
     start = float(index_file[0][0]) * fs
     end = float(index_file[-1][1]) * fs
-    buff = recording[int(start): int(end)]  # 要切割的数据
+    recording_buff = recording[int(start): int(end)]  # 准备切割的数据
+    labels_buff = labels[int(start * 1000 // label_frame): int(end * 1000 // label_frame)]  # 准备切割的标记
     fs = int(fs)
     # 计算每个片段的样本数
-    samples_per_segment = duration_len * fs
+    samples_per_recording = duration_len * fs
+    # 计算每个片段的标签长度
+    points_per_tag = int(samples_per_recording // 80)
     # 切割音频数据
     segments = []
-    for start in np.arange(0, len(buff), samples_per_segment):
-        end = start + samples_per_segment
-        new_segment = buff[start:end]
-        segments.append(new_segment)
+
+    for wav_start in np.arange(0, len(recording_buff), samples_per_recording):
+        wav_end = wav_start + samples_per_recording
+        segment = recording_buff[wav_start:wav_end]
+        segments.append(segment)
+
+    # 切割标签数据
+    tags = []
+    for tag_start in np.arange(0, len(labels_buff), points_per_tag):
+        tag_end = tag_start + points_per_tag
+        new_tags = recording_buff[tag_start:tag_end]
+        tags.append(new_tags)
 
     # segments.pop()
-    for num, new_segment in enumerate(segments):
+    for num, segment in enumerate(segments):
         print("==========duration_div===========")
-        wav_segment = new_segment
-        print("new_segment len: " + str(len(new_segment)))
-        if len(wav_segment) < samples_per_segment:
-            repeatTimes = samples_per_segment // len(wav_segment) - 1
-            for i in range(repeatTimes):
-                wav_segment = np.hstack((wav_segment, new_segment))
-            if len(wav_segment) < samples_per_segment:
+        wav_segment = segment
+        tag_segment = tags[num]
+        print("wav_segment len: " + str(len(wav_segment)))
+        if len(wav_segment) < samples_per_recording:
+            repeat_times = samples_per_recording // len(wav_segment)  # 重复次数，不用减一
+            for i in range(repeat_times):
+                wav_segment = np.hstack((wav_segment, segment))
+                tag_segment = np.hstack((tag_segment, tags[num]))
+            if len(wav_segment) < samples_per_recording:  # 应该不可能进这个，
                 wav_segment = np.pad(
                     wav_segment,
-                    (0, samples_per_segment - len(wav_segment)),
+                    (0, samples_per_recording - len(wav_segment)),
+                    "constant",
+                    constant_values=(0, 0)
+                )
+
+                tag_segment = np.pad(
+                    tag_segment,
+                    (0, points_per_tag - len(tag_segment)),
                     "constant",
                     constant_values=(0, 0)
                 )
             else:
-                wav_segment = new_segment[:samples_per_segment]
-        print("wav_segment len: " + str(len(wav_segment)))
-        soundfile.write(
-            state_path
-            + "{}_{}_{}_{}_{}_{}.wav".format(id_pos, str(duration_len) + "s", num, murmur_type, "None", human_feat),
-            wav_segment,
-            fs
-        )
+                wav_segment = wav_segment[:samples_per_recording]
+                tag_segment = tag_segment[:points_per_tag]
+        print(f"wav_segment len: + {str(len(wav_segment))},tag len: {len(tag_segment)}")
+
+        file_path = state_path + "{}_{}_{}_{}_{}_{}.wav".format(id_pos, str(duration_len) + "s", num, murmur_type,
+                                                                "None", human_feat)
+        soundfile.write(f" {file_path}.wav", wav_segment, fs)
+        save_as_txt(tag_segment,f"{file_path}.txt")
 
 
 # get patient id from csv file

@@ -9,9 +9,10 @@ from util.utils_dataset import *
 # ==================================================================== #
 if __name__ == '__main__':
     csv_path = r"E:\Shilong\00_PCGDataset\training_data.csv"
-    csv_source_path = r"D:\Shilong\new_murmur\02_dataset\00_s1s2_4k"
+    # 分折的csv文件【修改】
+    csv_source_path = r"D:\Shilong\new_murmur\02_dataset\02_s1s2_4k"
     # TODO 修改此处的root_path
-    root_path = r"E:\Shilong\02_dataset\00_5s_4k"
+    root_path = r"E:\Shilong\02_dataset\02_5s_4k"
     wav_len = 5  # 按照wav_len s切割
     is_states = False  # 是否按照state切割据集
     random_flod = True  # 是否随机分折
@@ -76,7 +77,6 @@ if __name__ == '__main__':
     murmur_class = ["Absent", "Present"]
     period = ["s1", "systolic", "s2", "diastolic"]
 
-
     folder_path = root_path + "\\"
 
     # 将wav文件和tsv文件copy到目标文件夹
@@ -125,10 +125,10 @@ if __name__ == '__main__':
                     state = subfile.split("_")[4]
                     if state == 'Absent':
                         shutil.copy(files, target_dir + "\\absent\\")
-                    elif state == 'Present':
+                    else :
                         shutil.copy(files, target_dir + "\\present\\")
-                    else:
-                        raise ValueError("state error")
+                    # else:
+                    #     raise ValueError("state error")
 
     for k in range(5):
         src_fold_root_path = root_path + r"'\fold_set_" + str(k)

@@ -291,7 +291,7 @@ def process_files(tsv_files_path, audio_files_path):
 if __name__=="__main__":
     # 路径设置
     tsv_files_path = r'E:\Shilong\02_dataset\training_data'  # 替换为实际的TSV文件路径
-    audio_files_path = r'E:\Shilong\02_dataset\training_data'  # 替换为实际的音频文件路径
+    audio_files_path = r'E:\Shilong\02_dataset\00_5s_4k\fold_set_0\present'  # 替换为实际的音频文件路径
     npsavefile_seg = r'E:\Shilong\02_dataset\test_labels_seg.npy'
     npsavefile_noi = r'E:\Shilong\02_dataset\test_labels_murmur.npy'
 
