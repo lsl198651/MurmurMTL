@@ -11,8 +11,10 @@ import torch
 import torch.nn as nn
 
 """
-Migrating from util.py.bak
+Migrating from utils.py.bak
 """
+
+
 def get_loss_func(task_type="classification"):
     if task_type == "classification":
         return nn.BCEWithLogitsLoss()
@@ -20,8 +22,8 @@ def get_loss_func(task_type="classification"):
         return torch.nn.MSELoss()
     else:
         raise ValueError("task_type must be classification or regression")
-    
-    
+
+
 def get_metric_func(task_type="classification"):
     if task_type == "classification":
         return roc_auc_score
@@ -47,7 +49,7 @@ def get_criterion(criterion_name):
         raise NotImplementedError(
             f"Criterion {criterion_name} has not been implemented."
         )
-        
+
 
 class EarlyStopper(object):
     """Early stops the training if validation loss doesn't improve after a given patience.
@@ -67,7 +69,7 @@ class EarlyStopper(object):
 
         Args:
             val_auc (float): auc score in val data.
-            weights (tensor): the weights of models
+            weights (tensor): the weights of model
         """
         if val_auc > self.best_auc:
             self.best_auc = val_auc
@@ -81,10 +83,10 @@ class EarlyStopper(object):
             return True
 
 
-
 """
 Adding new tools
 """
+
 
 def get_local_time():
     cur_time = datetime.now().strftime("%b-%d-%Y-%H-%M-%S")
@@ -113,10 +115,10 @@ def init_seed(seed=0, deterministic=False):
         torch.backends.cudnn.benchmark = True
         torch.backends.cudnn.deterministic = False
 
-    
+
 def get_instance(module, name, config, **kwargs):
     """
-    A reflection function to get models.
+    A reflection function to get model.
     Args:
         module ([type]): Package Name.
         name (str): Top level value in config dict. (backbone, classifier, etc.)
@@ -127,28 +129,29 @@ def get_instance(module, name, config, **kwargs):
     if config[name]["kwargs"] is not None:
         kwargs.update(config[name]["kwargs"])
 
-    if name == "models":
+    if name == "model":
         features = kwargs.pop("features")
         abstract_params = ["embedding_dim", "criterions", "task_types"]
         for k in list(filter(lambda k: k in config, abstract_params)):
             kwargs[k] = config[k]
         named_tuple = namedtuple("named_tuple", kwargs.keys())
         kwargs = {
-            "features": features, 
+            "features": features,
             "config": named_tuple(**kwargs),
         }
 
     return getattr(module, config[name]["name"])(**kwargs)
-            
-            
+
+
 class SaveType(Enum):
     NORMAL = 0
     BEST = 1
     LAST = 2
-    
-    
+
+
 # -*- TensorboardWriter to wrtie logs -*-
 from torch.utils import tensorboard
+
 
 class TensorboardWriter(object):
     def __init__(self, log_dir):
@@ -181,11 +184,13 @@ class TensorboardWriter(object):
         else:
             raise RuntimeError
 
-    def close(self,):
+    def close(self, ):
         self.writer.close()
 
 
 from torch.optim.lr_scheduler import _LRScheduler
+
+
 # https://github.com/ildoonet/pytorch-gradual-warmup-lr/blob/master/warmup_scheduler/scheduler.py
 class GradualWarmupScheduler(_LRScheduler):
     """Gradually warm-up(increasing) learning rate in optimizer.

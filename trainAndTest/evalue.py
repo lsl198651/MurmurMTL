@@ -67,7 +67,7 @@ def train_test(model,
         loss_fn = FocalLoss()
     # ============ training ================
     for epochs in range(args.num_epochs):
-        # train model
+        # train models
         model.test()
         train_loss = 0
         correct_t = 0
@@ -151,7 +151,7 @@ def train_test(model,
         if test_patient_acc > best_acc:
             best_acc = test_patient_acc
             # utils.save_checkpoint({"epoch": epochs + 1,
-            #                        "model": model.state_dict(),
+            #                        "models": models.state_dict(),
             #                        "optimizer": optimizer.state_dict()},
             #                       "se_resnet6v2",
             #                       args.test_fold[0],

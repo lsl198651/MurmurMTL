@@ -3,14 +3,14 @@ import argparse
 import logging
 import sys
 from pathlib import Path
-from run_MTL import VAR_DICT
 
 import numpy as np
 import torch.profiler
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
-from model import supernet
+from models import supernet
+from run_MTL import VAR_DICT
 from trainAndTest.train_eval import train_val
 from utils.util_dataloader import fold5_dataloader
 from utils.util_datasetClass import DatasetMTL
@@ -19,9 +19,9 @@ from utils.util_train import logger_init
 sys.dont_write_bytecode = True
 PROJ_PATH = Path(__file__).parent.parent.as_posix()
 sys.path.append(PROJ_PATH)
-print(sys.path)
+# print(sys.path)
 
-from configs.config import Config
+from config.Config import Config
 
 if __name__ == '__main__':
     # ========================/ 函数入口 /========================== #
@@ -46,27 +46,25 @@ if __name__ == '__main__':
     parser.add_argument("--samplerWeight", type=bool, default=True, help="use balanced sampler",
                         choices=[True, False])
     parser.add_argument("--cross_eevalue", type=bool, default=False)
-    parser.add_argument("--set_path", type=str, default=r"D:\Shilong\new_murmur\02_dataset")
+    parser.add_argument("--set_path", type=str, default=r"E:\Shilong\02_dataset")
     parser.add_argument("--train_fold", default=['0', '1', '2', '3'])
     parser.add_argument("--test_fold", default=['4'])
     parser.add_argument("--fold_res", default=[])
     parser.add_argument("--fold_best_ACC", default=0)
-    parser.add_argument("--set_name", type=str, default=r"\01_s1s2_4k")
-    parser.add_argument("--model_folder", type=str, default=r"D:\Shilong\new_murmur\01_code\MurmurPro\model\MyModels")
+    parser.add_argument("--set_name", type=str, default=r"\01_5s_4k_txt")
+    parser.add_argument("--model_folder", type=str, default=r"E:\Shilong\01_Code\MurmurMTL\models\MyModels")
     parser.add_argument("--isTensorboard", type=bool, default=False)
     parser.add_argument("--isSegments", type=bool, default=True)
     parser.add_argument("--saveModel", type=bool, default=True)
-    parser.add_argument("--isTry", type=bool, default=False)
+    parser.add_argument("--isTry", type=bool, default=True)
     # TODO 改模型名字
-    parser.add_argument("--desperation", type=str,
-                        default="logmel + se_resnet6v2  4k  samplerWeight[1,5] lr=0.05,32,64 channel reduction=8 "
-                                "high_freq=1000, window_type='hanning'")
+    parser.add_argument("--desperation", type=str, default="SuperNet_5s_4k_5fold MTL debug")
     args = parser.parse_args()
-    config = Config(r"D:\Shilong\new_murmur\01_code\AutoMTL\configs\default_nas.yaml", VAR_DICT).get_config_dict()
+    config = Config(r"E:\Shilong\01_Code\MurmurMTL\config\default_nas.yaml",VAR_DICT ).get_config_dict()
 
     all_list = ['0', '1', '2', '3', '4']
     # ========================/ 加载数据集 /========================== #
-    train_features, train_label, train_index, test_features, test_label, test_index = fold5_dataloader(
+    train_mel, train_label, train_index, train_tag, val_mel, value_label, val_index, val_tag = fold5_dataloader(
         args.set_path, args.train_fold, args.test_fold, args.data_augmentation, args.set_name)
     # todo 补充加入的嵌入数据，train_embs=[],test_embs=[]
     train_embs = 0
@@ -75,46 +73,46 @@ if __name__ == '__main__':
     if args.samplerWeight:
         weights = [5 if label == 1 else 1 for label in train_label]
         Data_sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-        train_loader = DataLoader(DatasetMTL(features=train_features,
+        train_loader = DataLoader(DatasetMTL(features=train_tag,
                                              wav_label=train_label,
-                                             wav_index=train_index,
-                                             embedded=train_embs),
+                                             wav_tag=train_tag,
+                                             wav_index=train_index),
                                   sampler=Data_sampler,
                                   batch_size=args.batch_size,
                                   drop_last=True,
                                   pin_memory=True,
                                   num_workers=4)
     else:
-        train_loader = DataLoader(DatasetMTL(features=train_features,
+        train_loader = DataLoader(DatasetMTL(features=train_tag,
                                              wav_label=train_label,
-                                             wav_index=train_index,
-                                             embedded=train_embs),
+                                             wav_tag=train_tag,
+                                             wav_index=train_index
+                                             ),
                                   batch_size=args.batch_size,
                                   drop_last=True,
                                   shuffle=True,
                                   pin_memory=True,
                                   num_workers=4)
 
-    val_loader = DataLoader(DatasetMTL(wav_label=test_label,
-                                       features=test_features,
-                                       wav_index=test_index,
-                                       embedded=test_embs),
+    val_loader = DataLoader(DatasetMTL(wav_label=value_label,
+                                       features=val_mel,
+                                       wav_tag=val_tag,
+                                       wav_index=val_index),
                             batch_size=args.batch_size // 4,
                             shuffle=False,
                             pin_memory=True,
                             num_workers=4)
 
     # ========================/ 选择模型 /========================== #
-    MyModel = supernet.SuperNet(features=None,
-                                embedding_dim=config["embedding_dim"],
-                                task_types=config["task_types"], n_experts=config["model"]["kwargs"]["n_experts"],
-                                n_expert_layers=config["model"]["kwargs"]["n_expert_layers"],
-                                n_layers=config["model"]["kwargs"]["expert_module"]["n_layers"],
-                                in_features=config["model"]["kwargs"]["expert_module"]["in_features"],
-                                out_features=config["model"]["kwargs"]["expert_module"]["out_features"],
-                                tower_layers=config["model"]["kwargs"]["tower_layers"],
-                                dropout=config["model"]["kwargs"]["dropout"],
-                                expert_candidate_ops=config["model"]["kwargs"]["expert_module"]["ops"])
+    MyModel = supernet.SuperNet(embedding_dim=config["embedding_dim"],
+                                task_types=config["task_types"], n_experts=config["models"]["kwargs"]["n_experts"],
+                                n_expert_layers=config["models"]["kwargs"]["n_expert_layers"],
+                                n_layers=config["models"]["kwargs"]["expert_module"]["n_layers"],
+                                in_features=config["models"]["kwargs"]["expert_module"]["in_features"],
+                                out_features=config["models"]["kwargs"]["expert_module"]["out_features"],
+                                tower_layers=config["models"]["kwargs"]["tower_layers"],
+                                dropout=config["models"]["kwargs"]["dropout"],
+                                expert_candidate_ops=config["models"]["kwargs"]["expert_module"]["ops"])
 
     # ========================/ 打印日志 /========================== #
     if args.isTry:
@@ -153,9 +151,9 @@ if __name__ == '__main__':
         train_present_size = np.sum(train_label == 1)
         train_absent_size = np.sum(train_label == 0)
         train_set_size = train_label.shape[0]
-        test_present_size = np.sum(test_label == 1)
-        test_absent_size = np.sum(test_label == 0)
-        test_set_size = test_label.shape[0]
+        test_present_size = np.sum(value_label == 1)
+        test_absent_size = np.sum(value_label == 0)
+        test_set_size = value_label.shape[0]
 
         # ========================/ 打印每折日志 /========================== #
         logging.info("\n**************************************")
@@ -168,7 +166,11 @@ if __name__ == '__main__':
         logging.info("# Optimizer = " + str(optimizer))
 
         # ========================/ 开始训练 /========================== #
-        train_val(model=MyModel, train_loader=train_loader, val_loader=val_loader, optimizer=optimizer, args=args)
+        train_val(model=MyModel,
+                  train_loader=train_loader,
+                  val_loader=val_loader,
+                  optimizer=optimizer,
+                  args=args)
         # ========================/ 五折均值 /========================== #
         args.fold_res.append(args.fold_best_ACC)
         args.fold_best_ACC = 0

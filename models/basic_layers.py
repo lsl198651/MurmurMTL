@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from src.models.basic.features import DenseFeature, SparseFeature
+from models.features import DenseFeature, SparseFeature
 
 
 def activate_layer(activate_name="relu", emb_dim=None):

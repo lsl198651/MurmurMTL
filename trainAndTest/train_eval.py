@@ -15,10 +15,10 @@ from utils.util_train import new_segment_cluster, new_duration_cluster
 
 
 def train_val(model,
-               train_loader,
-               val_loader,
-               optimizer=None,
-               args=None):
+              train_loader,
+              val_loader,
+              optimizer=None,
+              args=None):
     global lr_now, scheduler
     # ========================/ 声明 /========================== #
     error_index_path = r"./error_index/" + str(datetime.now().strftime("%Y-%m%d %H%M"))
@@ -63,17 +63,17 @@ def train_val(model,
         loss_fn = nn.CrossEntropyLoss()
     # ========================/ 训练网络 /========================== #
     for epochs in range(args.num_epochs):
-        # train model
+        # train models
         model.train()
         train_loss = 0
         correct_t = 0
         train_len = 0
         input_train = []
         target_train = []
-        for data_train, label_train, index_train, emb_train in train_loader:
-            data_train, label_train, index_train, emb_train = \
-                data_train.to(device), label_train.to(device), index_train.to(device), emb_train.to(device)
-            output_train = model(data_train, emb_train)
+        for input_train, tag_item, label_train, index_train in train_loader:
+            input_train, label_train, index_train, tag_item = \
+                input_train.to(device), label_train.to(device), index_train.to(device), tag_item.to(device)
+            output_train = model(input_train)
             loss_train = loss_fn(output_train, label_train.long())
             optimizer.zero_grad()
             loss_train.backward()
@@ -100,11 +100,11 @@ def train_val(model,
         test_loss = 0
         correct_v = 0
         with (torch.no_grad()):
-            for data_val, label_val, index_val, emb_val in val_loader:
-                data_val, label_val, index_val, emb_val =\
-                    data_val.to(device), label_val.to(device), index_val.to(device), emb_val.to(device)
+            for input_val, tag_val, label_val, index_val in val_loader:
+                input_val, label_val, index_val, tag_val = \
+                    input_val.to(device), label_val.to(device), index_val.to(device), tag_val.to(device)
                 optimizer.zero_grad()
-                output_val = model(data_val,emb_val)
+                output_val = model(input_val)
                 loss_val = loss_fn(output_val, label_val.long())
                 # get the index of the max log-probability
                 pred_val = output_val.max(1, keepdim=True)[1]

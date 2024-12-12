@@ -102,7 +102,7 @@ class Config(object):
             dict: A dict of AutoMTL console setting.
         """
         parser = argparse.ArgumentParser()
-        parser.add_argument("--model_name", type=str, help="model name")
+        parser.add_argument("--model_name", type=str, help="models name")
         parser.add_argument("--dataset_name", type=str, default="ijcai15", help="dataset name")
         parser.add_argument("--hpo_tune", type=bool, default=False, help="hpo tune")
 

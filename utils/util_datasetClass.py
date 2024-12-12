@@ -29,25 +29,28 @@ class DatasetClass(Dataset):
 class DatasetMTL(Dataset):
     """带有嵌入的数据集类"""
 
-    def __init__(self, features, wav_label, wav_index, embedded):
+    def __init__(self, features, wav_label, wav_tag, wav_index):
         self.data = torch.from_numpy(features)
         self.label = torch.from_numpy(wav_label)
+        self.tag = torch.from_numpy(wav_tag)
         self.idx = torch.from_numpy(wav_index)
-        self.emb = torch.from_numpy(embedded)
+        # self.emb = torch.from_numpy(embedded)
 
     def __getitem__(self, index):
         # 根据索引返回数据和对应的标签
         data_item = self.data[index]
         label_item = self.label[index]
+        tag_item = self.tag[index]
         idx_item = self.idx[index]
-        embedded = self.emb[index]
+        # embedded = self.emb[index]
         # embeding = 1  # fake
         # wide_feat = hand_fea((data_item, 4000))
-        return data_item.float(), label_item, idx_item, embedded
+        return data_item.float(), tag_item, label_item, idx_item#, embedded
 
     def __len__(self):
         # 返回文件数据的数目
         return len(self.data)
+
 
 class DatasetTest(Dataset):
     # Initialize your data, download, etc.

@@ -1,4 +1,6 @@
-from src.models.nas.mix_op import *
+import torch
+
+from models.mix_op import *
 import math
 
 

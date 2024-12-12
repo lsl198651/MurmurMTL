@@ -14,8 +14,8 @@ from utils.util_datasetClass import DatasetTest
 
 def run_model(model_folder, data_folder, output_folder):
     os.makedirs(output_folder, exist_ok=True)
-    # ---------------load model----------------
-    print('Loading Challenge model...')
+    # ---------------load models----------------
+    print('Loading Challenge models...')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = se_resnet6().to(device)
     check_path = os.path.join(model_folder, 'se_resnet6v2_model_best_2.pth.tar')

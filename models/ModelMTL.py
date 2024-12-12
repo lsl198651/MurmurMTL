@@ -7,19 +7,16 @@ from time import time
 from typing import Any
 
 import pandas as pd
-import torch
 import yaml
 from loguru import logger
 from numpy.typing import NDArray
-from src.models.basic.features import DenseFeature, SparseFeature
-from src.utils.utils import (
-    get_loss_func, get_metric_func, get_instance, get_local_time, create_dirs, init_seed,
-    GradualWarmupScheduler, SaveType, TensorboardWriter,
-)
 
-from model import SuperNet
+from models import SuperNet
+from models.features import DenseFeature, SparseFeature
 from utils.dataset_utils import DataGenerator
 from utils.util import *
+from utils.util_MTL import get_loss_func, get_metric_func, get_instance, get_local_time, create_dirs, init_seed, \
+    GradualWarmupScheduler, SaveType, TensorboardWriter
 
 
 class MurmurMTL:
@@ -69,7 +66,7 @@ class MurmurMTL:
         print(config)
 
     def fit(self, ):
-        """ The normal train loop: train loop: train-val and save model val-cc increases
+        """ The normal train loop: train loop: train-val and save models val-cc increases
         """
         print(
             f"#alpha_params: {len(list(self.net.alpha_parameters()))}\t"
@@ -274,7 +271,7 @@ class MurmurMTL:
             viz_path = os.path.join(log_path, "tfboard_files")
         else:
             base_dir = "{}-{}-{}".format(
-                config["model"]["name"],
+                config["models"]["name"],
                 config["dataset"].split("/")[-1],
                 "{}-{}".format(
                     config["tag"] if config["tag"] is not None else "",
@@ -310,14 +307,14 @@ class MurmurMTL:
             features=self.features,
             embedding_dim=config["embedding_dim"],
             task_types=config["task_types"],
-            n_experts=config["model"]["kwargs"]["n_experts"],
-            n_expert_layers=config["model"]["kwargs"]["n_expert_layers"],
-            n_layers=config["model"]["kwargs"]["expert_module"]["n_layers"],
-            in_features=config["model"]["kwargs"]["expert_module"]["in_features"],
-            out_features=config["model"]["kwargs"]["expert_module"]["out_features"],
-            tower_layers=config["model"]["kwargs"]["tower_layers"],
-            dropout=config["model"]["kwargs"]["dropout"],
-            expert_candidate_ops=config["model"]["kwargs"]["expert_module"]["ops"],
+            n_experts=config["models"]["kwargs"]["n_experts"],
+            n_expert_layers=config["models"]["kwargs"]["n_expert_layers"],
+            n_layers=config["models"]["kwargs"]["expert_module"]["n_layers"],
+            in_features=config["models"]["kwargs"]["expert_module"]["in_features"],
+            out_features=config["models"]["kwargs"]["expert_module"]["out_features"],
+            tower_layers=config["models"]["kwargs"]["tower_layers"],
+            dropout=config["models"]["kwargs"]["dropout"],
+            expert_candidate_ops=config["models"]["kwargs"]["expert_module"]["ops"],
         )
         net.init_arch_params(init_type="normal", init_ratio=1e-3)
         print(net)
@@ -326,7 +323,7 @@ class MurmurMTL:
             resume_path = os.path.join(
                 self.config["resume_path"], "checkpoints", "model_last.pth"
             )
-            print("load the resume model checkpoints dict from {}.".format(resume_path))
+            print("load the resume models checkpoints dict from {}.".format(resume_path))
             net = self._load_model(net, resume_path)
 
         net = net.to(self.rank)
@@ -393,7 +390,7 @@ class MurmurMTL:
         builtins.print = use_logger
 
         filename = "{}-{}-{}.log".format(
-            self.config["model"]["name"], "train" if is_train else "test", get_local_time()
+            self.config["models"]["name"], "train" if is_train else "test", get_local_time()
         )
         log_path = os.path.join(self.log_path, filename)
         logger.remove()
@@ -446,7 +443,7 @@ class MurmurMTL:
             torch.save(
                 {
                     "epoch": epoch,
-                    "model": model_state_dict,
+                    "models": model_state_dict,
                     "optimizer": self.optimizer.state_dict(),
                     "arch_optimizer": self.arch_optimizer.state_dict(),
                     "lr_scheduler": self.scheduler.state_dict(),
@@ -458,7 +455,7 @@ class MurmurMTL:
         json.dump(self.net.exported_arch, open(arch_name, "w"), indent=4)
 
     def _load_model(self, model, model_path, strict=False):
-        state_dict = torch.load(model_path, map_location="cpu")["model"]
+        state_dict = torch.load(model_path, map_location="cpu")["models"]
         msg = model.load_state_dict(state_dict, strict=False)
         if len(msg.missing_keys) != 0:
             print("missing keys:{}".format(msg.missing_keys), level="warning")

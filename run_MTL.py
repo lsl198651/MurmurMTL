@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-from model.ModelMTL import MurmurMTL
+from models.ModelMTL import MurmurMTL
 
 sys.dont_write_bytecode = True
 PROJ_PATH = Path(__file__).parent.parent.as_posix()
@@ -31,7 +31,7 @@ VAR_DICT = {
     "discretize_ops": 10,
     "test_epoch": 2,
 
-    "model": {
+    "models": {
         "name": "SuperNet",
         "kwargs": {
             "dropout": 0.2,

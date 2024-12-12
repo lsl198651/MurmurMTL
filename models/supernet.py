@@ -3,14 +3,14 @@ import copy
 import torch
 import torch.nn as nn
 
-from model.layers import FM, MLP, EmbeddingLayer
-from model.modules import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp
+from models.basic_layers import  FM, MLP
+from models import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp
 
 
 class SuperNet(BasicNetwork):
     def __init__(
             self,
-            features,
+            # features,
 
             embedding_dim,
             task_types,
@@ -46,8 +46,8 @@ class SuperNet(BasicNetwork):
         self._unused_modules = None
 
         # embedding layer and feature preprocessing
-        self.features = features
-        self.embedding = EmbeddingLayer(features)
+        # self.features = features
+        # self.embedding = EmbeddingLayer(features)
         self.embedding_dim = embedding_dim
         self.n_feilds = len(self.embedding.embed_dict)
         self.n_tasks = len(task_types)
@@ -116,7 +116,7 @@ class SuperNet(BasicNetwork):
             ]
         )
 
-    def forward(self, x, features, embedding):
+    def forward(self, features, embedding):
         embs, dense_fea = self.embedding(x, self.features, squeeze_dim=False)  # [B, N, E], [B, n_dense_fields]
         mix_features = [
             feature_module(embs, dense_fea) for feature_module in self.feature_modules

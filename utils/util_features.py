@@ -187,9 +187,9 @@ def load_checkpoint(checkpoint, model, optimizer=None, parallel=False):
         raise ("File Not Found Error {}".format(checkpoint))
     checkpoint = torch.load(checkpoint)
     if parallel:
-        model.module.load_state_dict(checkpoint["model"])
+        model.module.load_state_dict(checkpoint["models"])
     else:
-        model.load_state_dict(checkpoint["model"])
+        model.load_state_dict(checkpoint["models"])
 
     if optimizer:
         optimizer.load_state_dict(checkpoint["optimizer"])
