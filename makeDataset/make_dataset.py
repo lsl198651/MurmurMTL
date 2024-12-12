@@ -18,7 +18,7 @@ if __name__ == '__main__':
     random_flod = True  # 是否随机分折
     # TODO 修改此处的src_path
     src_path = r"E:\Shilong\00_PCGDataset\training_data"
-    # data_set(root_path, is_states, wav_len)
+    data_set(root_path, is_states, wav_len)
 
     # get dataset tag from table
     row_line = csv_reader_row(csv_path, 0)

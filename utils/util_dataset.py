@@ -421,47 +421,48 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
         data_length = fs * time
     for root, dir, file in os.walk(dir_path):
         for subfile in file:
-            file_name = os.path.splitext(subfile)[0]
-            wav_name = subfile + ".wav"
-            txt_name = subfile + ".txt"
-            # if not wav_name.endswith(".wav"):
-            # 报错
+            if subfile.endswith(".wav"):
+                file_name = os.path.splitext(subfile)[0]
+                wav_name = file_name + ".wav"
+                txt_name = file_name + ".txt"
+                # if wav_name.endswith(".wav"):
+                # 报错
 
-            wav_path = os.path.join(root, wav_name)
-            if os.path.exists(wav_path):
-                # 序号
-                data_id = data_id + 1
-                names.append(subfile)
-                index.append(data_id)
-                # 数据读取
-                print("reading: " + subfile)
-                y, sr = librosa.load(wav_path, sr=4000)
-                # TODO 采样率:4k
-                y_4k_norm = wav_normalize(y)  # 归一化
-                # # 数据裁剪
-                if y_4k_norm.shape[0] < data_length:
-                    y_4k_norm = np.pad(
-                        y_4k_norm,
-                        ((0, data_length - y_4k_norm.shape[0])),
-                        "constant",
-                        constant_values=(0, 0)
-                    )
-                elif y_4k_norm.shape[0] > data_length:
-                    # y_4k_norm = y_4k_norm[-data_length:]
-                    y_4k_norm = y_4k_norm[:data_length]
-                print("index is " + str(data_id), "y_4k size: " + str(y_4k_norm.size))
+                wav_path = os.path.join(root, wav_name)
+                if os.path.exists(wav_path) :
+                    # 序号
+                    data_id = data_id + 1
+                    names.append(subfile)
+                    index.append(data_id)
+                    # 数据读取
+                    print("reading: " + subfile)
+                    y, sr = librosa.load(wav_path, sr=4000)
+                    # TODO 采样率:4k
+                    y_4k_norm = wav_normalize(y)  # 归一化
+                    # # 数据裁剪
+                    if y_4k_norm.shape[0] < data_length:
+                        y_4k_norm = np.pad(
+                            y_4k_norm,
+                            ((0, data_length - y_4k_norm.shape[0])),
+                            "constant",
+                            constant_values=(0, 0)
+                        )
+                    elif y_4k_norm.shape[0] > data_length:
+                        # y_4k_norm = y_4k_norm[-data_length:]
+                        y_4k_norm = y_4k_norm[:data_length]
+                    print("index is " + str(data_id), "y_4k size: " + str(y_4k_norm.size))
 
-                wav.append(y_4k_norm)
-                file_name = subfile.split("_")
-                # 标签读取
-                if file_name[4] == "Absent":  # Absent
-                    label.append(0)
-                elif file_name[4] == "Present":  # Present
-                    label.append(1)  # 说明该听诊区有杂音
-                feat.append(file_name[-1])
+                    wav.append(y_4k_norm)
+                    file_name = subfile.split("_")
+                    # 标签读取
+                    if file_name[4] == "Absent":  # Absent
+                        label.append(0)
+                    elif file_name[4] == "Present":  # Present
+                        label.append(1)  # 说明该听诊区有杂音
+                    feat.append(file_name[-1])
 
-                tags_seg = read_txt(os.path.join(root, txt_name))
-                tags.append(tags_seg)
+                    tags_seg = read_txt(os.path.join(root, txt_name))
+                    tags.append(tags_seg)
 
     return wav, label, names, index, data_id, feat, tags
 
