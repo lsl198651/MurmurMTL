@@ -18,8 +18,8 @@ from src.utils.utils import (
 )
 
 from model import SuperNet
-from util.dataset_utils import DataGenerator
-from util.utils import *
+from utils.dataset_utils import DataGenerator
+from utils.util import *
 
 
 class MurmurMTL:

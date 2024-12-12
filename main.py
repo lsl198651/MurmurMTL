@@ -12,9 +12,9 @@ from torch.utils.data.sampler import WeightedRandomSampler
 
 from model import supernet
 from trainAndTest.train_eval import train_val
-from util.utils_dataloader import fold5_dataloader
-from util.utils_datasetClass import DatasetMTL
-from util.utils_train import logger_init
+from utils.util_dataloader import fold5_dataloader
+from utils.util_datasetClass import DatasetMTL
+from utils.util_train import logger_init
 
 sys.dont_write_bytecode = True
 PROJ_PATH = Path(__file__).parent.parent.as_posix()

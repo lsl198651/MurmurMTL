@@ -30,7 +30,7 @@ from scipy import signal
 # from python_speech_features import logfbank
 # from spafe.features.gfcc import erb_spectrogram
 # from spafe.utils.preprocessing import SlidingWindow
-# from util.get_wide_feature import hand_fea
+# from utils.get_wide_feature import hand_fea
 # warnings.filterwarnings('ignore')
 
 

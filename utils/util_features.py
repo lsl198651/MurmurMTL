@@ -6,7 +6,7 @@ import librosa.display
 import torch
 import torch.nn as nn
 
-from util.helper_code import *
+from utils.helper_code import *
 
 
 def get_mfcc(wavform):

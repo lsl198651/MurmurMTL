@@ -7,7 +7,7 @@ from datetime import datetime
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
-from util.utils_dataset import csv_reader_row, csv_reader_cl, csv_to_dict
+from utils.util_dataset import csv_reader_row, csv_reader_cl, csv_to_dict
 
 
 def logger_init(

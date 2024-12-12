@@ -1,7 +1,7 @@
 import os
-from util.utils_dataset import *
-from util.utils_dataset import get_id_position_org
-
+from utils.util_dataset import *
+# from utils.utils_dataset import get_id_position_org
+from utils.util_saveInfo import *
 if __name__ == "__main__":
     # output_path = r"D:\Shilong\new_murmur\02_dataset\02_4s_4k\npyFile_padded\organized_data"
     # data_path = r"D:\Shilong\new_murmur\02_dataset\02_4s_4k\npyFile_padded\index_files01_norm"
@@ -12,7 +12,7 @@ if __name__ == "__main__":
     #             get_id_position_org(root, output_path, file)
     #         # print('processing file:', file)
     #         # a = csv_to_dict(root, file)
-    root_path = r"E:\Shilong\02_dataset\00_5s_4k"
+    # root_path = r"E:\Shilong\02_dataset\00_5s_4k"
 
     # for k in range(5):
     #     for murmur_class in ['Absent', 'Present']:
@@ -30,7 +30,11 @@ if __name__ == "__main__":
     #                     shutil.copy(files, target_dir + "\\absent\\")
     #                 else :
     #                     shutil.copy(files, target_dir + "\\present\\")
-    for k in range(5):
-        src_fold_root_path = root_path + r"'\fold_set_" + str(k)
-        for murmur_class in ['absent', 'present']:
-            src_fold_path = src_fold_root_path + "\\" + murmur_class + "\\"
+    # for k in range(5):
+    #     src_fold_root_path = root_path + r"'\fold_set_" + str(k)
+    #     for murmur_class in ['absent', 'present']:
+    #         src_fold_path = src_fold_root_path + "\\" + murmur_class + "\\"
+
+    path=r'E:\Shilong\02_dataset\01_5s_4k_txt\fold_2\Present\14241_AV\14241_AV_5s_0_Early-systolic+nan_None_210.txt'
+    a=read_txt(path)
+    print(a)

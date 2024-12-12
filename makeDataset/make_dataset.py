@@ -2,7 +2,7 @@
 # Create Data: 2023-6
 # Modify Date:2024-10-21
 
-from util.utils_dataset import *
+from utils.util_dataset import *
 
 # ==================================================================== #
 # ========================/ code executive /========================== #
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     # 分折的csv文件【修改】
     csv_source_path = r"D:\Shilong\new_murmur\02_dataset\02_s1s2_4k"
     # TODO 修改此处的root_path
-    root_path = r"E:\Shilong\02_dataset\03_5s_4k"
+    root_path = r"E:\Shilong\02_dataset\01_5s_4k_txt"
     wav_len = 5  # 按照wav_len s切割
     is_states = False  # 是否按照state切割据集
     random_flod = True  # 是否随机分折

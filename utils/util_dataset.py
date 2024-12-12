@@ -7,9 +7,10 @@ import librosa.display
 import pandas as pd
 import soundfile
 
-from util.helper_code import *
-from util.utils_features import get_features_mod, get_logmel_feature
-from util.utils_saveInfo import save_as_txt
+from utils.helper_code import *
+from utils.util_features import get_features_mod, get_logmel_feature
+from utils.util_saveInfo import *
+
 
 def mkdir(path):
     # judge weather make dir or not
@@ -224,13 +225,14 @@ def duration_div(
     for (start, end, tag) in index_file:
         labels[int(float(start) * 1000 // label_frame):int(float(end) * 1000 // label_frame)] = int(tag)
 
-    print(labels)
+    # print(labels)
 
     # 从0开始切割
     start = float(index_file[0][0]) * fs
     end = float(index_file[-1][1]) * fs
     recording_buff = recording[int(start): int(end)]  # 准备切割的数据
-    labels_buff = labels[int(float(index_file[0][0]) * 1000 // label_frame): int(float(index_file[-1][1]) * 1000 // label_frame)]  # 准备切割的标记
+    labels_buff = labels[int(float(index_file[0][0]) * 1000 // label_frame): int(
+        float(index_file[-1][1]) * 1000 // label_frame)]  # 准备切割的标记
     fs = int(fs)
     # 计算每个片段的样本数
     samples_per_recording = duration_len * fs
@@ -250,6 +252,9 @@ def duration_div(
         tag_end = tag_start + points_per_tag
         new_tags = labels_buff[tag_start:tag_end]
         tags.append(new_tags)
+
+    if len(segments) > len(tags):
+        segments.pop()
 
     # segments.pop()
     for num, segment in enumerate(segments):
@@ -279,12 +284,12 @@ def duration_div(
             else:
                 wav_segment = wav_segment[:samples_per_recording]
                 tag_segment = tag_segment[:points_per_tag]
-        print(f"wav_segment len: + {str(len(wav_segment))},tag len: {len(tag_segment)}")
+        print(f"wav_segment len: {str(len(wav_segment))}, tag len: {len(tag_segment)}")
 
         file_path = state_path + "{}_{}_{}_{}_{}_{}".format(id_pos, str(duration_len) + "s", num, murmur_type,
-                                                                "None", human_feat)
+                                                            "None", human_feat)
         soundfile.write(rf"{file_path}.wav", wav_segment, fs)
-        save_as_txt(tag_segment,rf"{file_path}.txt")
+        save_as_txt(tag_segment, rf"{file_path}.txt")
 
 
 # get patient id from csv file
@@ -354,6 +359,7 @@ def copy_states_data(patient_id, folder, type, murmur):
 
 def data_set(root_path, is_by_state, wav_len):
     """数据增强，包括时间拉伸和反转"""
+    global data_id
     npy_path_padded = root_path + r"\npyFile_padded\npy_files01_norm"
     index_path = root_path + r"\npyFile_padded\index_files01_norm"
     mkdir(npy_path_padded)
@@ -366,11 +372,11 @@ def data_set(root_path, is_by_state, wav_len):
         for folder in os.listdir(src_fold_root_path):
             dataset_path = os.path.join(src_fold_root_path, folder)
             if k == 0 and folder == "absent":
-                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, wav_len,
-                                                                       data_id=0)  # absent
+                wav, label, names, index, data_id, feat, tags = get_wav_data(dataset_path, is_by_state, wav_len,
+                                                                             data_id=0)  # absent
             else:
-                wav, label, names, index, data_id, feat = get_wav_data(dataset_path, is_by_state, wav_len,
-                                                                       data_id)  # absent
+                wav, label, names, index, data_id, feat, tags = get_wav_data(dataset_path, is_by_state, wav_len,
+                                                                             data_id)  # absent
             mel_list = []
             for i in range(len(wav)):
                 mel = get_logmel_feature(wav[i])
@@ -381,6 +387,7 @@ def data_set(root_path, is_by_state, wav_len):
             np.save(npy_path_padded + f"\\{folder}_index_norm01_fold{k}.npy", index)  # 索引
             np.save(npy_path_padded + f"\\{folder}_name_norm01_fold{k}.npy", names)  # 文件名
             np.save(npy_path_padded + f"\\{folder}_feat_norm01_fold{k}.npy", feat)  # 人口特征
+            np.save(npy_path_padded + f"\\{folder}_tags_norm01_fold{k}.npy", tags)  # 状态标签
             absent_train_dic = zip(index, names, feat)
             pd.DataFrame(absent_train_dic).to_csv(index_path + f"\\fold{k}_{folder}_disc.csv", index=False,
                                                   header=False)
@@ -404,6 +411,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
     names = []
     index = []
     feat = []
+    tags = []
     # 设置采样率为4k，时间长度为4
     fs = 4000
 
@@ -413,7 +421,13 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
         data_length = fs * time
     for root, dir, file in os.walk(dir_path):
         for subfile in file:
-            wav_path = os.path.join(root, subfile)
+            file_name = os.path.splitext(subfile)[0]
+            wav_name = subfile + ".wav"
+            txt_name = subfile + ".txt"
+            # if not wav_name.endswith(".wav"):
+            # 报错
+
+            wav_path = os.path.join(root, wav_name)
             if os.path.exists(wav_path):
                 # 序号
                 data_id = data_id + 1
@@ -446,7 +460,10 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                     label.append(1)  # 说明该听诊区有杂音
                 feat.append(file_name[-1])
 
-    return wav, label, names, index, data_id, feat
+                tags_seg = read_txt(os.path.join(root, txt_name))
+                tags.append(tags_seg)
+
+    return wav, label, names, index, data_id, feat, tags
 
 
 def wav_normalize(data):

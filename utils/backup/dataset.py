@@ -2,7 +2,7 @@ import os
 
 import numpy as np
 
-from util.backup.BEATs_def import get_wav_data
+from utils.backup.BEATs_def import get_wav_data
 
 
 # ---------------------------

@@ -10,8 +10,8 @@ from torcheval.metrics.functional import binary_confusion_matrix, \
     binary_accuracy
 from transformers import optimization
 
-from util.utils_loss import FocalLoss
-from util.utils_train import new_segment_cluster, new_duration_cluster
+from utils.util_loss import FocalLoss
+from utils.util_train import new_segment_cluster, new_duration_cluster
 
 
 def train_val(model,

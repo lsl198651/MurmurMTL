@@ -3,8 +3,8 @@ import os
 import numpy as np
 import pandas as pd
 
-from utils_specAugmentation import data_Auge
-from util.backup.BEATs_def import get_wav_data
+from util_specAugmentation import data_Auge
+from utils.backup.BEATs_def import get_wav_data
 
 # ========================/ parameteres define /========================== #
 # murmur_positoin = ["_AV", "_MV", "_PV", "_TV"]

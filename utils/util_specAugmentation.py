@@ -4,7 +4,7 @@ import librosa
 import soundfile as sf
 from pydub import AudioSegment
 
-from util.backup.BEATs_def import mkdir
+from utils.backup.BEATs_def import mkdir
 
 
 def data_Auge(root_path):

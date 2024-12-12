@@ -9,15 +9,15 @@ from torch import optim
 # import numpy as np
 # import sklearn.metrics
 # from torch.cuda.amp import autocast, GradScaler
-# from util.BEATs_def import draw_confusion_matrix, butterworth_low_pass_filter
+# from utils.BEATs_def import draw_confusion_matrix, butterworth_low_pass_filter
 from torch.utils.tensorboard import SummaryWriter
 from torcheval.metrics.functional import binary_auprc, binary_auroc, binary_f1_score, binary_confusion_matrix, \
     binary_accuracy, binary_precision, binary_recall
 from transformers import optimization
 
-# from util.BEATs_def import Log_GF
+# from utils.BEATs_def import Log_GF
 # , get_segment_target_list, FocalLoss_VGG
-from util.utils_train import FocalLoss, segment_classifier
+from utils.util_train import FocalLoss, segment_classifier
 
 
 def train_test(model,

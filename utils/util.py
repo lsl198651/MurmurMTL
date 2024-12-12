@@ -11,7 +11,7 @@ import torch
 import torch.nn as nn
 
 """
-Migrating from utils.py.bak
+Migrating from util.py.bak
 """
 def get_loss_func(task_type="classification"):
     if task_type == "classification":
