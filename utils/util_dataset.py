@@ -406,11 +406,11 @@ def data_set(root_path, is_by_state, wav_len):
 
 def get_wav_data(dir_path, is_by_state, time, data_id=0):
     """返回数据文件"""
-    wav = []
-    label = []
+    waves = []
+    labels = []
     names = []
     index = []
-    feat = []
+    feats = []
     tags = []
     # 设置采样率为4k，时间长度为4
     fs = 4000
@@ -452,20 +452,25 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                         y_4k_norm = y_4k_norm[:data_length]
                     print("index is " + str(data_id), "y_4k size: " + str(y_4k_norm.size))
 
-                    wav.append(y_4k_norm)
+                    waves.append(y_4k_norm)
                     file_name = subfile.split("_")
                     # 标签读取
                     if file_name[4] == "Absent":  # Absent
-                        label.append(0)
+                        labels.append(0)
                     elif file_name[4] == "Present":  # Present
-                        label.append(1)  # 说明该听诊区有杂音
-                    feat.append(file_name[-1])
+                        labels.append(1)  # 说明该听诊区有杂音
+                    feats.append(file_name[-1])
 
                     tags_seg = read_txt(os.path.join(root, txt_name))
                     tags.append(tags_seg)
 
-    return wav, label, names, index, data_id, feat, tags
+    # 将列表转换为NumPy数组
+    # waves = np.array(waves)
+    # labels = np.array(labels)
+    # index = np.array(index)
+    # tags=np.array(tags)
 
+    return waves, labels, names, index, data_id, feats, tags
 
 def wav_normalize(data):
     """min max归一化"""

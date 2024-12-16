@@ -73,7 +73,7 @@ if __name__ == '__main__':
     if args.samplerWeight:
         weights = [5 if label == 1 else 1 for label in train_label]
         Data_sampler = WeightedRandomSampler(weights, num_samples=len(weights), replacement=True)
-        train_loader = DataLoader(DatasetMTL(features=train_tag,
+        train_loader = DataLoader(DatasetMTL(features=train_mel,
                                              wav_label=train_label,
                                              wav_tag=train_tag,
                                              wav_index=train_index),
@@ -83,7 +83,7 @@ if __name__ == '__main__':
                                   pin_memory=True,
                                   num_workers=4)
     else:
-        train_loader = DataLoader(DatasetMTL(features=train_tag,
+        train_loader = DataLoader(DatasetMTL(features=train_mel,
                                              wav_label=train_label,
                                              wav_tag=train_tag,
                                              wav_index=train_index

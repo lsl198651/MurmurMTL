@@ -368,7 +368,7 @@ def fold5_dataloader(set_path, train_folder, test_folder, data_augmentation, set
             test_mel_dic[test_folder[0]]['present']
         ), axis=0
     )
-    val_tag = np.vstack(
+    val_tag = np.concatenate(
         (
             test_tag_dic[test_folder[0]]['absent'],
             test_tag_dic[test_folder[0]]['present'],
