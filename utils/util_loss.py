@@ -87,7 +87,7 @@ class FocalLoss_VGG(nn.Module):
             BCE_loss = F.binary_cross_entropy_with_logits(
                 torch.argmax(inputs, dim=1).float(), targets, weight=self.weight, reduce=False)
         else:
-            CE_loss = nn.CrossEntropyLoss(                inputs, targets, reduce=True)
+            CE_loss = nn.CrossEntropyLoss(inputs, targets, reduce=True)
         pt = torch.exp(-BCE_loss)
         F_loss = self.alpha * (1 - pt) ** self.gamma * BCE_loss
 

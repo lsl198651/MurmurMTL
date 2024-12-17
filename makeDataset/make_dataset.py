@@ -125,7 +125,7 @@ if __name__ == '__main__':
                     state = subfile.split("_")[4]
                     if state == 'Absent':
                         shutil.copy(files, target_dir + "\\absent\\")
-                    else :
+                    else:
                         shutil.copy(files, target_dir + "\\present\\")
                     # else:
                     #     raise ValueError("state error")

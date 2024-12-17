@@ -4,8 +4,8 @@ import numpy as np
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from models.nas_layers import *
 from models.modules import GateFunc
+from models.nas_layers import *
 
 
 class MixFeature(BasicUnit):

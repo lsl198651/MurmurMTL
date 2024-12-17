@@ -29,14 +29,14 @@ class DataGenerator:
         self.length = len(self.dataset)
 
     def generate_dataloader(
-        self,
-        x_val=None,
-        y_val=None,
-        x_test=None,
-        y_test=None,
-        split_ratio=None,
-        batch_size=16,
-        num_workers=8,
+            self,
+            x_val=None,
+            y_val=None,
+            x_test=None,
+            y_test=None,
+            split_ratio=None,
+            batch_size=16,
+            num_workers=8,
     ):
         if split_ratio != None:
             train_length = int(self.length * split_ratio[0])
@@ -98,14 +98,14 @@ def get_metric_func(task_type="classification"):
 
 
 def generate_seq_feature(
-    data,
-    user_col,
-    item_col,
-    time_col,
-    item_attribute_cols=[],
-    min_item=0,
-    shuffle=True,
-    max_len=50,
+        data,
+        user_col,
+        item_col,
+        time_col,
+        item_attribute_cols=[],
+        min_item=0,
+        shuffle=True,
+        max_len=50,
 ):
     """generate sequence feature and negative sample for ranking.
 
@@ -148,7 +148,7 @@ def generate_seq_feature(
     data.sort_values(time_col, inplace=True)
     # Sliding window to construct negative samples
     for uid, hist in tqdm.tqdm(
-        data.groupby(user_col), desc="generate sequence features"
+            data.groupby(user_col), desc="generate sequence features"
     ):
         pos_list = hist[item_col].tolist()
         len_pos_list = len(pos_list)
@@ -165,7 +165,7 @@ def generate_seq_feature(
             neg_seq = [0, neg_item, uid, hist_item]
             if len(item_attribute_cols) > 0:
                 for (
-                    attr_col
+                        attr_col
                 ) in item_attribute_cols:  # the history of item attribute features
                     hist_attr = hist[attr_col].tolist()[:i]
                     hist_attr = hist_attr + [0] * (max_len - len(hist_attr))
@@ -224,7 +224,7 @@ def neg_sample(click_hist, item_size):
 
 
 def pad_sequences(
-    sequences, maxlen=None, dtype="int32", padding="pre", truncating="pre", value=0.0
+        sequences, maxlen=None, dtype="int32", padding="pre", truncating="pre", value=0.0
 ):
     """Pads sequences (list of list) to the ndarray of same length.
     This is an equivalent implementation of tf.keras.preprocessing.sequence.pad_sequences
@@ -246,7 +246,7 @@ def pad_sequences(
         trunc = np.asarray(trunc, dtype=dtype)
 
         if padding == "pre":
-            arr[idx, -len(trunc) :] = trunc
+            arr[idx, -len(trunc):] = trunc
         else:
             arr[idx, : len(trunc)] = trunc
     return arr

@@ -1,7 +1,8 @@
-import os
 import csv
-import numpy as np
+import os
 import wave
+
+import numpy as np
 
 
 def replace_zeros(arr):
@@ -15,6 +16,7 @@ def replace_zeros(arr):
 
     # 将展平的数组恢复原始形状
     return flattened_arr.reshape(arr.shape)
+
 
 def get_half_indices(start, end, mode='first'):
     """ Helper function to get indices for marking segments """
@@ -31,6 +33,7 @@ def get_half_indices(start, end, mode='first'):
     elif mode == 'none':
         return []  # Return an empty range, so no indices will be set to 1
 
+
 def get_half_indices_true(start, end, mode='first'):
     """ Helper function to get indices for marking segments """
     length = end - start
@@ -45,6 +48,7 @@ def get_half_indices_true(start, end, mode='first'):
         return range(start + half_length, end)
     elif mode == 'none':
         return []  # Return an empty range, so no indices will be set to 1
+
 
 def my_construct_new_annotations(original_annotations, murmur_type):
     new_annotations = [0] * len(original_annotations)
@@ -65,6 +69,7 @@ def my_construct_new_annotations(original_annotations, murmur_type):
                     new_annotations[j] = 1
 
     return new_annotations
+
 
 def construct_new_annotations(original_annotations, murmur_type):
     new_annotations = [0] * len(original_annotations)
@@ -196,6 +201,7 @@ def construct_new_annotations(original_annotations, murmur_type):
 
     return new_annotations
 
+
 # 读取TSV文件并存储解析后的数据
 def read_tsv_file(tsv_file):
     segments = []
@@ -257,8 +263,8 @@ def label_audio_file(audio_file, segments):
 
 # 主处理函数
 def process_files(tsv_files_path, audio_files_path):
-    all_labels_seg = []   #seg
-    all_labels_mur = []  #noise
+    all_labels_seg = []  # seg
+    all_labels_mur = []  # noise
     tsv_files = sorted([f for f in os.listdir(tsv_files_path) if f.endswith('.tsv')])
     audio_files = sorted([f for f in os.listdir(audio_files_path) if f.endswith('.wav')])
 
@@ -287,8 +293,9 @@ def process_files(tsv_files_path, audio_files_path):
 
     return labels_matrix, labels_matrix2
 
+
 # 执行处理
-if __name__=="__main__":
+if __name__ == "__main__":
     # 路径设置
     tsv_files_path = r'E:\Shilong\02_dataset\training_data'  # 替换为实际的TSV文件路径
     audio_files_path = r'E:\Shilong\02_dataset\00_5s_4k\fold_set_0\present'  # 替换为实际的音频文件路径

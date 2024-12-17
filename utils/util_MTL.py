@@ -1,14 +1,14 @@
+import copy
+import os
+import random
 from collections import namedtuple
 from datetime import datetime
 from enum import Enum
-from sklearn.metrics import mean_squared_error, roc_auc_score
 
-import os
-import random
-import copy
 import numpy as np
 import torch
 import torch.nn as nn
+from sklearn.metrics import mean_squared_error, roc_auc_score
 
 """
 Migrating from utils.py.bak

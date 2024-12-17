@@ -1,5 +1,3 @@
-from collections import OrderedDict
-
 import torch
 import torch.nn as nn
 
@@ -42,13 +40,13 @@ def set_layer_from_config(layer_config):
 
 class BasicLayer(BasicUnit):
     def __init__(
-        self,
-        in_features,
-        out_features,
-        use_bn=True,
-        act_func="relu",
-        dropout_rate=0,
-        ops_order="weight_bn_act",
+            self,
+            in_features,
+            out_features,
+            use_bn=True,
+            act_func="relu",
+            dropout_rate=0,
+            ops_order="weight_bn_act",
     ):
         super(BasicLayer, self).__init__()
 
@@ -149,13 +147,13 @@ class BasicLayer(BasicUnit):
 
 class IdentityLayer(BasicLayer):
     def __init__(
-        self,
-        in_features,
-        out_features,
-        use_bn=False,
-        act_func=None,
-        dropout_rate=0,
-        ops_order="weight_bn_act",
+            self,
+            in_features,
+            out_features,
+            use_bn=False,
+            act_func=None,
+            dropout_rate=0,
+            ops_order="weight_bn_act",
     ):
         super(IdentityLayer, self).__init__(
             in_features, out_features, use_bn, act_func, dropout_rate, ops_order
@@ -193,14 +191,14 @@ class IdentityLayer(BasicLayer):
 
 class LinearLayer(BasicLayer):
     def __init__(
-        self,
-        in_features,
-        out_features,
-        bias=True,
-        use_bn=False,
-        act_func=None,
-        dropout_rate=0,
-        ops_order="weight_bn_act",
+            self,
+            in_features,
+            out_features,
+            bias=True,
+            use_bn=False,
+            act_func=None,
+            dropout_rate=0,
+            ops_order="weight_bn_act",
     ):
         super(LinearLayer, self).__init__(
             in_features, out_features, use_bn, act_func, dropout_rate, ops_order
@@ -274,14 +272,14 @@ class MLP(BasicLayer):
     """Multple Layer Perceptron"""
 
     def __init__(
-        self,
-        in_features,
-        out_features,
-        hidden_size,
-        use_bn=False,
-        act_func="relu",
-        dropout_rate=0,
-        ops_order="weight_bn_act",
+            self,
+            in_features,
+            out_features,
+            hidden_size,
+            use_bn=False,
+            act_func="relu",
+            dropout_rate=0,
+            ops_order="weight_bn_act",
     ):
         super(MLP, self).__init__(
             in_features, out_features, use_bn, act_func, dropout_rate, ops_order

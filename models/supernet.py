@@ -3,8 +3,8 @@ import copy
 import torch
 import torch.nn as nn
 
-from models.basic_layers import  FM, MLP
 from models import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp
+from models.basic_layers import FM, MLP
 
 
 class SuperNet(BasicNetwork):
@@ -49,12 +49,14 @@ class SuperNet(BasicNetwork):
         # self.features = features
         # self.embedding = EmbeddingLayer(features)
         self.embedding_dim = embedding_dim
-        self.n_feilds = len(self.embedding.embed_dict)
+        # self.n_feilds = len(self.embedding.embed_dict)
+        self.n_feilds = 128
         self.n_tasks = len(task_types)
 
-        self.input_dim = (
-                self.embedding_dim * (self.n_feilds + 1) + self.embedding.n_dense
-        )
+        # self.input_dim = (
+        #         self.embedding_dim * (self.n_feilds + 1) + self.embedding.n_dense
+        # )
+        self.input_dim = 128
 
         self.n_experts = n_experts
         self.n_expert_layers = n_expert_layers

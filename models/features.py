@@ -14,7 +14,7 @@ class SparseFeature:
     """
 
     def __init__(
-        self, name, vocab_size, embed_dim=16, shared_with=None, padding_idx=None
+            self, name, vocab_size, embed_dim=16, shared_with=None, padding_idx=None
     ):
         self.name = name
         self.vocab_size = vocab_size

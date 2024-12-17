@@ -1,7 +1,6 @@
-import torch
+import math
 
 from models.mix_op import *
-import math
 
 
 class GateFunc(torch.autograd.Function):
@@ -17,7 +16,7 @@ class GateFunc(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         return grad_output, None
-    
+
 
 class BasicNetwork(nn.Module):
     def forward(self, x):
@@ -89,7 +88,7 @@ class BasicNetwork(nn.Module):
 
 class ExpertModule(BasicUnit):
     def __init__(
-        self, input_dim, in_features, out_features, num_layers, candidate_ops, dropout=0
+            self, input_dim, in_features, out_features, num_layers, candidate_ops, dropout=0
     ):
         """The Expert Module.
 
@@ -128,7 +127,6 @@ class ExpertModule(BasicUnit):
             blocks.append(op)
 
         self.blocks = nn.ModuleList(blocks)
-        
 
     def forward(self, x):
         """

@@ -3,8 +3,8 @@ import types
 import torch.nn.functional as F
 from torch.nn.parameter import Parameter
 
-from models.nas_layers import *
 from models.modules import GateFunc
+from models.nas_layers import *
 
 
 class MixedExpert(BasicUnit):
@@ -58,7 +58,7 @@ class MixedExpert(BasicUnit):
         out = 0
         for i in range(self.n_choices):
             out += (
-                gate_value[:, i].unsqueeze(1) * expert_outputs[i] * expert_selection[i]
+                    gate_value[:, i].unsqueeze(1) * expert_outputs[i] * expert_selection[i]
             )
 
         return out
@@ -105,7 +105,7 @@ class MixedExpert(BasicUnit):
         if beta:
             self.beta.data = torch.tensor(beta)
         else:
-            self.beta.data = (F.sigmoid(self.beta.data) > 0.5).float()  
+            self.beta.data = (F.sigmoid(self.beta.data) > 0.5).float()
         self.beta.requires_grad = False
 
         self.forward = types.MethodType(_forward, self)

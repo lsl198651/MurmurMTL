@@ -100,7 +100,7 @@ class EmbeddingLayer(nn.Module):
             )  # [batch_size, num_features, embed_dim]
 
         if (
-            squeeze_dim
+                squeeze_dim
         ):  # Note: if the emb_dim of sparse features is different, we must squeeze_dim
             if dense_exists and not sparse_exists:  # only input dense features
                 return dense_values
@@ -156,13 +156,13 @@ class MLP(nn.Module):
     """
 
     def __init__(
-        self,
-        layers,
-        dropout=0.0,
-        activate="relu",
-        bn=True,
-        init_method=None,
-        contain_output_layer=False,
+            self,
+            layers,
+            dropout=0.0,
+            activate="relu",
+            bn=True,
+            init_method=None,
+            contain_output_layer=False,
     ):
         super(MLP, self).__init__()
         self.layers = layers
@@ -173,7 +173,7 @@ class MLP(nn.Module):
 
         mlp_modules = []
         for i, (input_size, output_size) in enumerate(
-            zip(self.layers[:-1], self.layers[1:])
+                zip(self.layers[:-1], self.layers[1:])
         ):
             mlp_modules.append(nn.Linear(input_size, output_size))
             if self.use_bn:

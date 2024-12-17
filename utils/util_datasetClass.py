@@ -45,7 +45,7 @@ class DatasetMTL(Dataset):
         # embedded = self.emb[index]
         # embeding = 1  # fake
         # wide_feat = hand_fea((data_item, 4000))
-        return data_item.float(), tag_item, label_item, idx_item#, embedded
+        return data_item.float(), tag_item, label_item, idx_item  # , embedded
 
     def __len__(self):
         # 返回文件数据的数目

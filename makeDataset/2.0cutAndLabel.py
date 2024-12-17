@@ -1,21 +1,16 @@
 import os
 import shutil
 
-import librosa
-import scipy.signal as signal
-import librosa.display
-import matplotlib.pyplot as plt
-import soundfile as sf
-from tools.subdir import maksubdir
-from pydub import AudioSegment
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pydub import AudioSegment
+from tools.subdir import maksubdir
 
 
 def label_most(label, label_slice_len):
     label_sliced = []
     for i in range(len(label) // label_slice_len):
-        slice = label[label_slice_len * i : label_slice_len * (i + 1)]
+        slice = label[label_slice_len * i: label_slice_len * (i + 1)]
         slice = slice.astype(np.int64)
         count = np.bincount(slice)
         appro_label = np.argmax(count)
@@ -39,7 +34,7 @@ def load_murmur(location, murmurInfo):
     diaMurmur = False
     diaTime = 0
     if (murmurInfo["Murmur"].values[0] != "Present") or (
-        location not in murmurInfo["Murmur locations"].values[0]
+            location not in murmurInfo["Murmur locations"].values[0]
     ):
         return sysMurmur, sysTime, diaMurmur, diaTime
     else:
@@ -106,19 +101,19 @@ def gen_label(label_path_, wav_len, murmurInfo):
     # s1: 1, s2: 3, sys: 2, dia: 4, no_signal: 0
     for duration in s1:
         end = duration[1] if len(duration) == 2 else -1
-        labels[duration[0] : end] = 1
+        labels[duration[0]: end] = 1
     for duration in s2:
         end = duration[1] if len(duration) == 2 else -1
-        labels[duration[0] : end] = 3
+        labels[duration[0]: end] = 3
     for duration in sys:
         end = duration[1] if len(duration) == 2 else -1
-        labels[duration[0] : end] = 2
+        labels[duration[0]: end] = 2
         if sysMurmur:
             murmurStart, murmurEnd = getMurmurEnds(duration[0], end, sysTime)
             murmurs[murmurStart:murmurEnd] = 1
     for duration in dia:
         end = duration[1] if len(duration) == 2 else -1
-        labels[duration[0] : end] = 4
+        labels[duration[0]: end] = 4
         if diaMurmur:
             murmurStart, murmurEnd = getMurmurEnds(duration[0], end, diaTime)
             murmurs[murmurStart:murmurEnd] = 1
@@ -160,7 +155,7 @@ for file in files:
             os.path.join(wavSameBase, file),
         )
     else:
-        wav = wav[0 : lastEnd * 1000]
+        wav = wav[0: lastEnd * 1000]
         wav.export(
             os.path.join(wavSameBase, file),
             format="wav",
@@ -179,8 +174,8 @@ for file in files:
     startZeroIndex = notZero.tolist().index(True) if notZero[0] == False else 0
     notZero = notZero[startZeroIndex:]
     endZeroIndex = (
-        notZero.tolist().index(False) if notZero[-1] == False else len(notZero)
-    ) + startZeroIndex
+                       notZero.tolist().index(False) if notZero[-1] == False else len(notZero)
+                   ) + startZeroIndex
     if startZeroIndex != 0 or endZeroIndex != len(label):
         # startZeroIndex 与 endZeroIndex 需要为4的倍数，且在原始startZeroIndex与endZeroIndex的范围内
         startZeroIndex = (
@@ -191,12 +186,12 @@ for file in files:
         endZeroIndex = endZeroIndex - endZeroIndex % 4
         label = label[startZeroIndex:endZeroIndex]
         murmurs = murmurs[startZeroIndex:endZeroIndex]
-        wav = wav[int(startZeroIndex / 4) : int(endZeroIndex / 4)]
+        wav = wav[int(startZeroIndex / 4): int(endZeroIndex / 4)]
 
     label = label_most(label, 80)  # 80个采样点，4000采样率，20ms
     murmurs = label_most(murmurs, 80)
 
-    newWav = wav[0 : len(label) * 20]
+    newWav = wav[0: len(label) * 20]
     wavLen = newWav.duration_seconds
     if wavLen == 0:
         continue
@@ -210,18 +205,18 @@ for file in files:
             outSeg = np.hstack((outSeg, label))
             outMurmur = np.hstack((outMurmur, murmurs))
         outWav += newWav[
-            0 : int(np.round(targetLen * 1000 - wavLen * 1000 * repeatTimes))
-        ]
+                  0: int(np.round(targetLen * 1000 - wavLen * 1000 * repeatTimes))
+                  ]
         outSeg = np.hstack(
             (
                 outSeg,
-                label[0 : int(np.round(targetLen * 50 - wavLen * 50 * repeatTimes))],
+                label[0: int(np.round(targetLen * 50 - wavLen * 50 * repeatTimes))],
             )
         )
         outMurmur = np.hstack(
             (
                 outMurmur,
-                murmurs[0 : int(np.round(targetLen * 50 - wavLen * 50 * repeatTimes))],
+                murmurs[0: int(np.round(targetLen * 50 - wavLen * 50 * repeatTimes))],
             )
         )
         # if (
@@ -242,19 +237,19 @@ for file in files:
     else:
         cutNum = int(np.ceil(wavLen / targetLen))
         padWav = (
-            newWav
-            + newWav[0 : int(np.round(cutNum * targetLen * 1000 - wavLen * 1000))]
+                newWav
+                + newWav[0: int(np.round(cutNum * targetLen * 1000 - wavLen * 1000))]
         )
         padSeg = np.hstack(
-            (label, label[0 : int(np.round(cutNum * targetLen * 50 - wavLen * 50))])
+            (label, label[0: int(np.round(cutNum * targetLen * 50 - wavLen * 50))])
         )
         padMurmur = np.hstack(
-            (murmurs, murmurs[0 : int(np.round(cutNum * targetLen * 50 - wavLen * 50))])
+            (murmurs, murmurs[0: int(np.round(cutNum * targetLen * 50 - wavLen * 50))])
         )
         for i in range(cutNum):
-            outWav = padWav[i * targetLen * 1000 : (i + 1) * targetLen * 1000]
-            outSeg = padSeg[i * targetLen * 50 : (i + 1) * targetLen * 50]
-            outMurmur = padMurmur[i * targetLen * 50 : (i + 1) * targetLen * 50]
+            outWav = padWav[i * targetLen * 1000: (i + 1) * targetLen * 1000]
+            outSeg = padSeg[i * targetLen * 50: (i + 1) * targetLen * 50]
+            outMurmur = padMurmur[i * targetLen * 50: (i + 1) * targetLen * 50]
             # if (
             #     AudioSegment.from_wav(
             #         os.path.join(outputBase, file.split(".")[0] + "_1.wav")

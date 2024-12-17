@@ -226,10 +226,10 @@ def get_height(data):
     for l in data.split('\n'):
         if l.startswith('#Height:'):
             try:
-                height = float(0 if l.split(': ')[1].strip()=="nan" else l.split(': ')[1].strip())
+                height = float(0 if l.split(': ')[1].strip() == "nan" else l.split(': ')[1].strip())
 
             except:
-                height=0
+                height = 0
     return height
 
 
@@ -241,7 +241,7 @@ def get_weight(data):
     for l in data.split('\n'):
         if l.startswith('#Weight:'):
             try:
-                weight = float(0 if l.split(': ')[1].strip()=="nan" else l.split(': ')[1].strip())
+                weight = float(0 if l.split(': ')[1].strip() == "nan" else l.split(': ')[1].strip())
             except:
                 pass
     return weight

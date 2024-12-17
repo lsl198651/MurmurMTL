@@ -4,7 +4,6 @@ import shutil
 
 import librosa
 import librosa.display
-import numpy as np
 import pandas as pd
 import soundfile
 
@@ -420,7 +419,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
     feats = []
     # tags = []
     # 设置采样率为4k，时间长度为4
-    tags=np.zeros(250)
+    tags = np.zeros(250)
     fs = 4000
 
     if is_by_state:
@@ -437,7 +436,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                 # 报错
 
                 wav_path = os.path.join(root, wav_name)
-                if os.path.exists(wav_path) :
+                if os.path.exists(wav_path):
                     # 序号
                     data_id = data_id + 1
                     names.append(subfile)
@@ -470,7 +469,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                     feats.append(file_name[-1])
 
                     tags_seg = read_txt_np(os.path.join(root, txt_name))
-                    tags=np.vstack((tags,tags_seg))
+                    tags = np.vstack((tags, tags_seg))
 
     # 将列表转换为NumPy数组
     # waves = np.array(waves)
@@ -479,6 +478,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
     # tags=np.array(tags)
 
     return waves, labels, names, index, data_id, feats, tags[1:]
+
 
 def wav_normalize(data):
     """min max归一化"""

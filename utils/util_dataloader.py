@@ -267,7 +267,7 @@ def fold5_dataloader(set_path, train_folder, test_folder, data_augmentation, set
                 train_mel_dic[train_folder[3]][train_folders[10]]
             )
         )
-        train_tag= np.hstack(
+        train_tag = np.hstack(
             (
                 train_tag_dic[train_folder[0]][train_folders[0]],
                 train_tag_dic[train_folder[0]][train_folders[1]],

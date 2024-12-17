@@ -1,7 +1,6 @@
-import os
-from utils.util_dataset import *
 # from utils.utils_dataset import get_id_position_org
 from utils.util_saveInfo import *
+
 if __name__ == "__main__":
     # output_path = r"D:\Shilong\new_murmur\02_dataset\02_4s_4k\npyFile_padded\organized_data"
     # data_path = r"D:\Shilong\new_murmur\02_dataset\02_4s_4k\npyFile_padded\index_files01_norm"
@@ -38,6 +37,6 @@ if __name__ == "__main__":
     # path=r'E:\Shilong\02_dataset\01_5s_4k_txt\fold_2\Present\14241_AV\14241_AV_5s_0_Early-systolic+nan_None_210.txt'
     # a=read_txt(path)
     # print(a)
-    path=r'E:\Shilong\02_dataset\05_5s_4k_txt\npyFile_padded\npy_files01_norm\absent_tags_norm01_fold1.npy'
-    a=np.load(path, allow_pickle=True)
+    path = r'E:\Shilong\02_dataset\05_5s_4k_txt\npyFile_padded\npy_files01_norm\absent_tags_norm01_fold1.npy'
+    a = np.load(path, allow_pickle=True)
     print(a)

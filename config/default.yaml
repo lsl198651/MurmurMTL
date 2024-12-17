@@ -2,11 +2,11 @@
 dataset: UserBehavior
 dataset_path: /data/datasets/UserBehavior/
 dataset_ext: csv
-dense_fields: []
-sparse_fields: ["user_id:token", "item_id:token", "category:token"]
-label_fields: ["click:label", "buy:label", "cart:label", "favourite:label"]
+dense_fields: [ ]
+sparse_fields: [ "user_id:token", "item_id:token", "category:token" ]
+label_fields: [ "click:label", "buy:label", "cart:label", "favourite:label" ]
 task_types:
-  ["classification", "classification", "classification", "classification"]
+  [ "classification", "classification", "classification", "classification" ]
 num_workers: 8
 
 # -*- Result Configs -*-
@@ -36,14 +36,14 @@ batch_size: 1024
 earlystop_patience: 10
 # abstract params
 embedding_dim: 64
-criterions: [bce, bce, bce, bce]
-val_metrics: [auc, auc, auc, auc]
+criterions: [ bce, bce, bce, bce ]
+val_metrics: [ auc, auc, auc, auc ]
 model:
   name: AITM
   kwargs:
     dropout: 0.2
-    bottom_layers: [512, 256]
-    tower_layers: [128, 64]
+    bottom_layers: [ 512, 256 ]
+    tower_layers: [ 128, 64 ]
 
 # -*- Optim Configs -*-
 warmup: 0     # set 0 to turn off warmup

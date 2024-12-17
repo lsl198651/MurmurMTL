@@ -7,9 +7,9 @@ from torch.utils.data import DataLoader
 from torcheval.metrics.functional import binary_auprc, binary_auroc, binary_f1_score, binary_confusion_matrix, \
     binary_accuracy, binary_precision, binary_recall
 
-from utils.util_loss import FocalLoss
 from utils.helper_code import get_murmur, find_patient_files, load_patient_data
 from utils.util_datasetClass import DatasetTest
+from utils.util_loss import FocalLoss
 
 
 def run_model(model_folder, data_folder, output_folder):

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import argparse
 import os
-import random
 import re
+
 import yaml
 
 DEFAULT_FILE = os.path.join(os.path.dirname(__file__), "default.yaml")

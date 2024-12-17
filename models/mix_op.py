@@ -5,7 +5,7 @@ from models.nas_layers import *
 
 
 def build_candidate_ops(
-    candidate_ops, in_features, out_features, ops_order="weight_bn_act", dropout=0
+        candidate_ops, in_features, out_features, ops_order="weight_bn_act", dropout=0
 ):
     if candidate_ops is None:
         raise ValueError("please specify a candidate set")

@@ -2,11 +2,11 @@
 dataset: UserBehavior
 dataset_path: /data/datasets/UserBehavior/
 dataset_ext: csv
-dense_fields: []
-sparse_fields: ["user_id:token", "item_id:token", "category:token"]
-label_fields: ["click:label", "buy:label", "cart:label", "favourite:label"]
+dense_fields: [ ]
+sparse_fields: [ "user_id:token", "item_id:token", "category:token" ]
+label_fields: [ "click:label", "buy:label", "cart:label", "favourite:label" ]
 task_types:
-  ["classification", "classification", "classification", "classification"]
+  [ "classification", "classification", "classification", "classification" ]
 num_workers: 8
 
 # -*- Result Configs -*- 
@@ -35,14 +35,14 @@ batch_size: 1024
 earlystop_patience: 10
 # abstract params
 embedding_dim: 64
-criterions: [bce, bce, bce, bce]
-val_metrics: [auc, auc, auc, auc]
+criterions: [ bce, bce, bce, bce ]
+val_metrics: [ auc, auc, auc, auc ]
 
 model:
   name: SuperNet
   kwargs:
     dropout: 0.2
-    tower_layers: [64]
+    tower_layers: [ 64 ]
     # search space
     n_expert_layers: 2
     n_experts: 4
@@ -75,7 +75,7 @@ optimizer:
   kwargs:
     lr: 1.0e-3
     weight_decay: 1.0e-5
-  
+
 arch_optimizer:
   name: AdamW
   kwargs:
