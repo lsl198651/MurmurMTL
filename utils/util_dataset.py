@@ -4,6 +4,7 @@ import shutil
 
 import librosa
 import librosa.display
+import numpy as np
 import pandas as pd
 import soundfile
 
@@ -274,7 +275,10 @@ def duration_div(
                     "constant",
                     constant_values=(0, 0)
                 )
+            else:
+                wav_segment = wav_segment[:samples_per_recording]
 
+            if len(tag_segment) < points_per_tag:
                 tag_segment = np.pad(
                     tag_segment,
                     (0, points_per_tag - len(tag_segment)),
@@ -282,14 +286,17 @@ def duration_div(
                     constant_values=(0, 0)
                 )
             else:
-                wav_segment = wav_segment[:samples_per_recording]
                 tag_segment = tag_segment[:points_per_tag]
+        if len(wav_segment) != samples_per_recording or len(tag_segment) != points_per_tag:
+            raise ValueError("wav_segment and tag_segment length not equal")
+            print(state_path)
+
         print(f"wav_segment len: {str(len(wav_segment))}, tag len: {len(tag_segment)}")
 
         file_path = state_path + "{}_{}_{}_{}_{}_{}".format(id_pos, str(duration_len) + "s", num, murmur_type,
                                                             "None", human_feat)
         soundfile.write(rf"{file_path}.wav", wav_segment, fs)
-        save_as_txt(tag_segment, rf"{file_path}.txt")
+        save_as_txt_np(tag_segment, rf"{file_path}.txt")
 
 
 # get patient id from csv file
@@ -411,8 +418,9 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
     names = []
     index = []
     feats = []
-    tags = []
+    # tags = []
     # 设置采样率为4k，时间长度为4
+    tags=np.zeros(250)
     fs = 4000
 
     if is_by_state:
@@ -461,8 +469,8 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                         labels.append(1)  # 说明该听诊区有杂音
                     feats.append(file_name[-1])
 
-                    tags_seg = read_txt(os.path.join(root, txt_name))
-                    tags.append(tags_seg)
+                    tags_seg = read_txt_np(os.path.join(root, txt_name))
+                    tags=np.vstack((tags,tags_seg))
 
     # 将列表转换为NumPy数组
     # waves = np.array(waves)
@@ -470,7 +478,7 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
     # index = np.array(index)
     # tags=np.array(tags)
 
-    return waves, labels, names, index, data_id, feats, tags
+    return waves, labels, names, index, data_id, feats, tags[1:]
 
 def wav_normalize(data):
     """min max归一化"""

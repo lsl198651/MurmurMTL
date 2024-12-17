@@ -12,13 +12,13 @@ if __name__ == '__main__':
     # 分折的csv文件【修改】
     csv_source_path = r"D:\Shilong\new_murmur\02_dataset\02_s1s2_4k"
     # TODO 修改此处的root_path
-    root_path = r"E:\Shilong\02_dataset\02_5s_4k_txt"
+    root_path = r"E:\Shilong\02_dataset\01_5s_4k_txt"
     wav_len = 5  # 按照wav_len s切割
     is_states = False  # 是否按照state切割据集
     random_flod = True  # 是否随机分折
     # TODO 修改此处的src_path
     src_path = r"E:\Shilong\00_PCGDataset\training_data"
-    data_set(root_path, is_states, wav_len)
+    # data_set(root_path, is_states, wav_len)
 
     # get dataset tag from table
     row_line = csv_reader_row(csv_path, 0)

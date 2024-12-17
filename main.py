@@ -60,7 +60,7 @@ if __name__ == '__main__':
     # TODO 改模型名字
     parser.add_argument("--desperation", type=str, default="SuperNet_5s_4k_5fold MTL debug")
     args = parser.parse_args()
-    config = Config(r"E:\Shilong\01_Code\MurmurMTL\config\default_nas.yaml",VAR_DICT ).get_config_dict()
+    config = Config(r"E:\Shilong\01_Code\MurmurMTL\config\default_nas.yaml", VAR_DICT).get_config_dict()
 
     all_list = ['0', '1', '2', '3', '4']
     # ========================/ 加载数据集 /========================== #
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                             num_workers=4)
 
     # ========================/ 选择模型 /========================== #
-    MyModel = supernet.SuperNet(embedding_dim=config["embedding_dim"],
+    MyModel = supernet.SuperNet(embedding_dim=128,
                                 task_types=config["task_types"], n_experts=config["models"]["kwargs"]["n_experts"],
                                 n_expert_layers=config["models"]["kwargs"]["n_expert_layers"],
                                 n_layers=config["models"]["kwargs"]["expert_module"]["n_layers"],
