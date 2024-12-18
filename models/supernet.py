@@ -50,13 +50,14 @@ class SuperNet(BasicNetwork):
         # self.embedding = EmbeddingLayer(features)
         self.embedding_dim = embedding_dim
         # self.n_feilds = len(self.embedding.embed_dict)
-        self.n_feilds = 128
+        self.n_feilds = 1
         self.n_tasks = len(task_types)
+        self.embedding_n_dense = 0
 
         # self.input_dim = (
         #         self.embedding_dim * (self.n_feilds + 1) + self.embedding.n_dense
         # )
-        self.input_dim = 128
+        self.input_dim =self.embedding_dim * (self.n_feilds + 1)
 
         self.n_experts = n_experts
         self.n_expert_layers = n_expert_layers
@@ -97,7 +98,7 @@ class SuperNet(BasicNetwork):
         self.mixed_experts = nn.ModuleList(
             nn.ModuleList(
                 [
-                    MixedExpert(self.input_dim, n_choices=self.n_experts)
+                    MixedExpert(80, n_choices=self.n_experts)
                     for _ in range(
                     self.n_experts if i < self.n_expert_layers - 1
                     else self.n_tasks
@@ -118,13 +119,23 @@ class SuperNet(BasicNetwork):
             ]
         )
 
-    def forward(self, features, embedding):
-        embs, dense_fea = self.embedding(x, self.features, squeeze_dim=False)  # [B, N, E], [B, n_dense_fields]
+        self.conv = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
+        self.dense = nn.Linear(163840, 16)
+
+    def forward(self, features):
+        features = features.unsqueeze(1)
+        x = self.conv(features)
+        x = x.flatten(start_dim=1)
+        x = self.dense(x)
+
+        embs, dense_fea = x, None
+        embs = embs.unsqueeze(1)
+        # embs, dense_fea = self.embedding(x, self.features, squeeze_dim=False)  # [B, N, E], [B, n_dense_fields]
         mix_features = [
             feature_module(embs, dense_fea) for feature_module in self.feature_modules
         ]
         mix_features.append(
-            nn.functional.pad(embs.view(embs.size(0), -1), (0, self.embedding_dim + self.embedding.n_dense))
+            nn.functional.pad(embs.view(embs.size(0), -1), (0, self.embedding_dim + self.embedding_n_dense))
         )  # raw feature input for gate
 
         temp = []

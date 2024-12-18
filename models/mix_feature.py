@@ -52,12 +52,8 @@ class MixFeature(BasicUnit):
             out (Tensor): feature after selection and interaction
                 [batch size, (nfields + 1) * embedding size + n_dense_fields]
         """
-        single_selection = self.selection_gate(
-            F.sigmoid(self.single_beta), self.in_warmup
-        ).view(1, self.n_fields, 1)
-        inter_selection = self.selection_gate(
-            F.sigmoid(self.inter_beta), self.in_warmup
-        ).view(1, self.n_fields, 1)
+        single_selection = self.selection_gate(F.sigmoid(self.single_beta), self.in_warmup).view(1, self.n_fields, 1)
+        inter_selection = self.selection_gate(F.sigmoid(self.inter_beta), self.in_warmup).view(1, self.n_fields, 1)
         single_feature = single_selection * embs
 
         inter_feature = self.interaction_layer(inter_selection * embs)

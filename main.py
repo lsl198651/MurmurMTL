@@ -9,7 +9,7 @@ import torch.profiler
 from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
-from models import supernet
+from models.supernet import SuperNet
 from run_MTL import VAR_DICT
 from trainAndTest.train_eval import train_val
 from utils.util_dataloader import fold5_dataloader
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     # TODO 改模型名字
     parser.add_argument("--desperation", type=str, default="SuperNet_5s_4k_5fold MTL debug")
     args = parser.parse_args()
-    config = Config(r"E:\Shilong\01_Code\MurmurMTL\config\default_nas.yaml", VAR_DICT).get_config_dict()
+    config = Config(r"E:\Shilong\01_Code\MurmurMTL\config\default_nas.yaml").get_config_dict()
 
     all_list = ['0', '1', '2', '3', '4']
     # ========================/ 加载数据集 /========================== #
@@ -104,19 +104,22 @@ if __name__ == '__main__':
                             num_workers=4)
 
     # ========================/ 选择模型 /========================== #
-    MyModel = supernet.SuperNet(embedding_dim=128,
-                                task_types=config["task_types"], n_experts=config["models"]["kwargs"]["n_experts"],
-                                n_expert_layers=config["models"]["kwargs"]["n_expert_layers"],
-                                n_layers=config["models"]["kwargs"]["expert_module"]["n_layers"],
-                                in_features=config["models"]["kwargs"]["expert_module"]["in_features"],
-                                out_features=config["models"]["kwargs"]["expert_module"]["out_features"],
-                                tower_layers=config["models"]["kwargs"]["tower_layers"],
-                                dropout=config["models"]["kwargs"]["dropout"],
-                                expert_candidate_ops=config["models"]["kwargs"]["expert_module"]["ops"])
+    print(config)
+    MyModel = SuperNet(embedding_dim=config['embedding_dim'],
+                       task_types=config["task_types"],
+                       n_experts=config["models"]["kwargs"]["n_experts"],
+                       n_expert_layers=config["models"]["kwargs"]["n_expert_layers"],
+                       n_layers=config["models"]["kwargs"]["expert_module"]["n_layers"],
+                       in_features=config["models"]["kwargs"]["expert_module"]["in_features"],
+                       out_features=config["models"]["kwargs"]["expert_module"]["out_features"],
+                       tower_layers=config["models"]["kwargs"]["tower_layers"],
+                       dropout=config["models"]["kwargs"]["dropout"],
+                       expert_candidate_ops=config["models"]["kwargs"]["expert_module"]["ops"])
 
     # ========================/ 打印日志 /========================== #
     if args.isTry:
         args.num_epochs = 4
+        args.batch_size = 50
     else:
         logger_init()
     logging.info(f"# {args.desperation}")

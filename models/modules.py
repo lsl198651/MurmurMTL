@@ -77,9 +77,9 @@ class BasicNetwork(nn.Module):
                 stdv = 1. / math.sqrt(m.weight.size(1))
                 m.weight.data.uniform_(-stdv, stdv)
                 if m.bias is not None:
-                    m.bias.data.zero_()
+                    m.bias.features.zero_()
             elif isinstance(m, nn.BatchNorm1d):
-                m.weight.data.fill_(1)
+                m.weight.features.fill_(1)
                 m.bias.data.zero_()
 
     def weight_parameters(self):
@@ -113,14 +113,16 @@ class ExpertModule(BasicUnit):
             self.out_features = [out_features] * num_layers
 
         self.num_layers = num_layers
+        self.in_features=32
+        self.out_features=[32, 32, 32]
 
         blocks = []
         for i in range(num_layers):
             op = MixedOp(
                 candidate_ops=build_candidate_ops(
                     candidate_ops,
-                    self.in_features[i],
-                    self.out_features[i],
+                    32,
+                    32,
                     dropout=dropout,
                 )
             )

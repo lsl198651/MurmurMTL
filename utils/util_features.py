@@ -200,4 +200,4 @@ def initialize_weights(m):
     classname = m.__class__.__name__
     print(classname)
     if classname.find('Linear') != -1:
-        nn.init.ones_(m.weight.data)
+        nn.init.ones_(m.weight.features)

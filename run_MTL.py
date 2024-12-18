@@ -45,7 +45,7 @@ VAR_DICT = {
                 "n_layers": 3,
                 "ops": [
                     "Identity", "MLP-16", "MLP-32", "MLP-64",
-                    "MLP-128", "MLP-256", "MLP-512", "MLP-1024",
+
                 ]
             }
         }

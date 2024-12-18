@@ -6,7 +6,7 @@ dense_fields: [ ]
 sparse_fields: [ "user_id:token", "item_id:token", "category:token" ]
 label_fields: [ "click:label", "buy:label", "cart:label", "favourite:label" ]
 task_types:
-  [ "classification", "classification", "classification", "classification" ]
+  [ "classification", "classification"]
 num_workers: 8
 
 # -*- Result Configs -*- 
@@ -38,7 +38,7 @@ embedding_dim: 64
 criterions: [ bce, bce, bce, bce ]
 val_metrics: [ auc, auc, auc, auc ]
 
-model:
+models:
   name: SuperNet
   kwargs:
     dropout: 0.2
@@ -47,7 +47,7 @@ model:
     n_expert_layers: 2
     n_experts: 4
     expert_module:
-      in_features: 64
+      in_features: 128
       out_features: 64
       n_layers: 3
       ops:
@@ -56,10 +56,10 @@ model:
           "MLP-16",
           "MLP-32",
           "MLP-64",
-          "MLP-128",
-          "MLP-256",
-          "MLP-512",
-          "MLP-1024",
+#          "MLP-128",
+#          "MLP-256",
+#          "MLP-512",
+#          "MLP-1024",
         ]
 
 epoch: 2

@@ -175,7 +175,7 @@ class MLP(nn.Module):
         for i, (input_size, output_size) in enumerate(
                 zip(self.layers[:-1], self.layers[1:])
         ):
-            mlp_modules.append(nn.Linear(input_size, output_size))
+            mlp_modules.append(nn.Linear(32, output_size))
             if self.use_bn:
                 mlp_modules.append(nn.BatchNorm1d(num_features=output_size))
             activate_func = activate_layer(activate_name=activate)
@@ -195,7 +195,7 @@ class MLP(nn.Module):
             if self.init_method == "norm":
                 nn.init.normal_(module.weight.data, 0, 0.01)
             if module.bias is not None:
-                module.bias.data.fill_(0.0)
+                module.bias.features.fill_(0.0)
 
     def forward(self, input_x):
         return self.mlp_layers(input_x)
