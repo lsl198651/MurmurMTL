@@ -37,6 +37,6 @@ if __name__ == "__main__":
     # path=r'E:\Shilong\02_dataset\01_5s_4k_txt\fold_2\Present\14241_AV\14241_AV_5s_0_Early-systolic+nan_None_210.txt'
     # a=read_txt(path)
     # print(a)
-    path = r'E:\Shilong\02_dataset\05_5s_4k_txt\npyFile_padded\npy_files01_norm\absent_tags_norm01_fold1.npy'
+    path = r'E:\Shilong\02_dataset\02_5s_4k_txt\npyFile_padded\npy_files01_norm\present_labels_norm01_fold0.npy'
     a = np.load(path, allow_pickle=True)
     print(a)

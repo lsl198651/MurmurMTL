@@ -50,7 +50,7 @@ if __name__ == '__main__':
     parser.add_argument("--test_fold", default=['4'])
     parser.add_argument("--fold_res", default=[])
     parser.add_argument("--fold_best_ACC", default=0)
-    parser.add_argument("--set_name", type=str, default=r"\01_5s_4k_txt")
+    parser.add_argument("--set_name", type=str, default=r"\02_5s_4k_txt")
     parser.add_argument("--model_folder", type=str, default=r"E:\Shilong\01_Code\MurmurMTL\models\MyModels")
     parser.add_argument("--isTensorboard", type=bool, default=False)
     parser.add_argument("--isSegments", type=bool, default=True)

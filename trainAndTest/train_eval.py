@@ -14,6 +14,7 @@ from utils.util_loss import FocalLoss
 from utils.util_train import new_segment_cluster, new_duration_cluster
 
 
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 def train_val(model,
               train_loader,
               val_loader,
@@ -36,6 +37,7 @@ def train_val(model,
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     model = model.to(device)  # 放到设备中
+    alpha = 0.5
     # for amp
     # ========================/ 学习率设置 /========================== #
     # scaler = GradScaler()
@@ -68,7 +70,7 @@ def train_val(model,
     for epochs in range(args.num_epochs):
         # train models
         model.train()
-        train_total_loss_murmur, train_total_loss_segment = 0, 0
+        # train_loss = 0
 
         correct_t = 0
         train_len = 0
@@ -82,13 +84,13 @@ def train_val(model,
             output_segment = output_train[1]
             train_loss_murmur = loss_fn_murmur(output_murmur, label_train.long())
             train_loss_segment = loss_fn_segment(output_segment, tag_train)
+            train_loss = alpha * train_loss_murmur + (1 - alpha) * train_loss_segment
 
             optimizer.zero_grad()
-            (train_loss_murmur + train_loss_segment).backward()
+            train_loss.backward()
             optimizer.step()
+            # train_loss += train_loss.item()
 
-            train_total_loss_murmur += train_loss_murmur.item()
-            train_total_loss_segment += train_loss_segment.item()
             # get the index of the max log-probability
             pred_t = output_train[0].max(1, keepdim=True)[1]
             pred_t = pred_t.squeeze(1)
@@ -119,12 +121,11 @@ def train_val(model,
                 output_val_segment = output_val[1]
                 loss_val_murmur = loss_fn_murmur(output_val_murmur, label_val.long())
                 loss_val_segment = loss_fn_segment(output_val_segment, tag_val)
-
-
+                val_loss = alpha * loss_val_murmur + (1 - alpha) * loss_val_segment
 
                 # get the index of the max log-probability
                 pred_val = output_val_murmur.max(1, keepdim=True)[1]
-                val_loss += (loss_val_murmur+loss_val_segment).item()
+                # val_loss += (loss_val_murmur + loss_val_segment).item()
                 pred_val = pred_val.squeeze(1)
                 correct_v += pred_val.eq(label_val).sum().item()
                 idx_v = index_val[pred_val.ne(label_val)]

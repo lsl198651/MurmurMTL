@@ -464,7 +464,8 @@ def get_wav_data(dir_path, is_by_state, time, data_id=0):
                     # 标签读取
                     if file_name[4] == "Absent":  # Absent
                         labels.append(0)
-                    elif file_name[4] == "Present":  # Present
+                    # elif file_name[4] == "Present":  # Present
+                    else:
                         labels.append(1)  # 说明该听诊区有杂音
                     feats.append(file_name[-1])
 
