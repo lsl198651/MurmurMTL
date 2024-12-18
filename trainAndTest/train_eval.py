@@ -74,14 +74,14 @@ def train_val(model,
         train_len = 0
         output_train_list = []
         target_train_list = []
-        for input_train, tag_item, label_train, index_train in train_loader:
-            input_train, label_train, index_train, tag_item = \
-                input_train.to(device), label_train.to(device), index_train.to(device), tag_item.to(device)
+        for input_train, tag_train, label_train, index_train in train_loader:
+            input_train, label_train, index_train, tag_train = \
+                input_train.to(device), label_train.to(device), index_train.to(device), tag_train.to(device)
             output_train = model(input_train)
             output_murmur = output_train[0]
             output_segment = output_train[1]
             train_loss_murmur = loss_fn_murmur(output_murmur, label_train.long())
-            train_loss_segment = loss_fn_segment(output_segment, tag_item)
+            train_loss_segment = loss_fn_segment(output_segment, tag_train)
 
             optimizer.zero_grad()
             (train_loss_murmur + train_loss_segment).backward()
@@ -123,7 +123,7 @@ def train_val(model,
 
 
                 # get the index of the max log-probability
-                pred_val = output_val_murmur[0].max(1, keepdim=True)[1]
+                pred_val = output_val_murmur.max(1, keepdim=True)[1]
                 val_loss += (loss_val_murmur+loss_val_segment).item()
                 pred_val = pred_val.squeeze(1)
                 correct_v += pred_val.eq(label_val).sum().item()

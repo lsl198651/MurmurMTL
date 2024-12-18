@@ -55,7 +55,7 @@ if __name__ == '__main__':
     parser.add_argument("--isTensorboard", type=bool, default=False)
     parser.add_argument("--isSegments", type=bool, default=True)
     parser.add_argument("--saveModel", type=bool, default=True)
-    parser.add_argument("--isTry", type=bool, default=True)
+    parser.add_argument("--isTry", type=bool, default=False)
     # TODO 改模型名字
     parser.add_argument("--desperation", type=str, default="SuperNet_5s_4k_5fold MTL debug")
     args = parser.parse_args()
