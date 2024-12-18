@@ -44,7 +44,7 @@ models:
     dropout: 0.2
     tower_layers: [ 64 ]
     # search space
-    n_expert_layers: 2
+    n_expert_layers: 3
     n_experts: 4
     expert_module:
       in_features: 128

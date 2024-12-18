@@ -161,6 +161,8 @@ class SuperNet(BasicNetwork):
 
         outs = [self.towers[i](mix_features[i]) for i in range(self.n_tasks)]
         # outs = torch.cat(outs, dim=1)
+        # outs[0]=outs[0].squeeze()
+        outs[1] = outs[1].squeeze()
 
         return outs
 

@@ -72,16 +72,16 @@ def train_val(model,
 
         correct_t = 0
         train_len = 0
-        input_train = []
-        target_train = []
+        output_train_list = []
+        target_train_list = []
         for input_train, tag_item, label_train, index_train in train_loader:
             input_train, label_train, index_train, tag_item = \
                 input_train.to(device), label_train.to(device), index_train.to(device), tag_item.to(device)
             output_train = model(input_train)
             output_murmur = output_train[0]
-            output_normal = output_train[1]
+            output_segment = output_train[1]
             train_loss_murmur = loss_fn_murmur(output_murmur, label_train.long())
-            train_loss_segment = loss_fn_segment(output_normal, tag_item)
+            train_loss_segment = loss_fn_segment(output_segment, tag_item)
 
             optimizer.zero_grad()
             (train_loss_murmur + train_loss_segment).backward()
@@ -90,14 +90,14 @@ def train_val(model,
             train_total_loss_murmur += train_loss_murmur.item()
             train_total_loss_segment += train_loss_segment.item()
             # get the index of the max log-probability
-            pred_t = output_train.max(1, keepdim=True)[1]
+            pred_t = output_train[0].max(1, keepdim=True)[1]
             pred_t = pred_t.squeeze(1)
-            input_train.extend(pred_t.cpu().tolist())
-            target_train.extend(label_train.cpu().tolist())
+            output_train_list.extend(pred_t.cpu().tolist())
+            target_train_list.extend(label_train.cpu().tolist())
             correct_t += pred_t.eq(label_train).sum().item()
             train_len += len(pred_t)
         # ========================/ 调库计算指标  /========================== #
-        train_input, train_target = torch.as_tensor(input_train), torch.as_tensor(target_train)
+        train_input, train_target = torch.as_tensor(output_train_list), torch.as_tensor(target_train_list)
         train_acc = binary_accuracy(train_input, train_target)
         # print(f"train_acc:{train_acc:.2%}")
         # ========================/ 验证网络 /========================== #
@@ -106,7 +106,7 @@ def train_val(model,
         pred = []
         error_index = []
         result_list_present = []
-        test_loss = 0
+        val_loss = 0
         correct_v = 0
         with (torch.no_grad()):
             for input_val, tag_val, label_val, index_val in val_loader:
@@ -114,10 +114,17 @@ def train_val(model,
                     input_val.to(device), label_val.to(device), index_val.to(device), tag_val.to(device)
                 optimizer.zero_grad()
                 output_val = model(input_val)
-                loss_val = loss_fn(output_val, label_val.long())
+
+                output_val_murmur = output_val[0]
+                output_val_segment = output_val[1]
+                loss_val_murmur = loss_fn_murmur(output_val_murmur, label_val.long())
+                loss_val_segment = loss_fn_segment(output_val_segment, tag_val)
+
+
+
                 # get the index of the max log-probability
-                pred_val = output_val.max(1, keepdim=True)[1]
-                test_loss += loss_val.item()
+                pred_val = output_val_murmur[0].max(1, keepdim=True)[1]
+                val_loss += (loss_val_murmur+loss_val_segment).item()
                 pred_val = pred_val.squeeze(1)
                 correct_v += pred_val.eq(label_val).sum().item()
                 idx_v = index_val[pred_val.ne(label_val)]
@@ -156,7 +163,7 @@ def train_val(model,
             lr_now = group["lr"]
         lr.append(lr_now)
         # "更新权值"
-        test_loss /= len(pred)
+        val_loss /= len(pred)
         train_total_loss_murmur /= train_len
         max_train_acc.append(train_acc)
         max_test_acc.append(test_acc)
@@ -167,14 +174,14 @@ def train_val(model,
             tb_writer.add_scalar("train_acc", train_acc, epochs)
             tb_writer.add_scalar("test_acc", test_acc, epochs)
             tb_writer.add_scalar("train_loss", train_total_loss_murmur, epochs)
-            tb_writer.add_scalar("test_loss", test_loss, epochs)
+            tb_writer.add_scalar("test_loss", val_loss, epochs)
             tb_writer.add_scalar("learning_rate", lr_now, epochs)
             # tb_writer.add_scalar("patient_acc", test_patient_acc, epochs)
         # ========================/ 日志  /========================== #
         logging.info(f"============================")
         logging.info(f"EPOCH: {epochs + 1}/{args.num_epochs}")
         logging.info(f"Learning rate: {lr_now:.1e}")
-        logging.info(f"LOSS: train:{train_total_loss_murmur:.2e} verify:{test_loss:.2e}")
+        logging.info(f"LOSS: train:{train_total_loss_murmur:.2e} verify:{val_loss:.2e}")
         logging.info(f"segments_CM:{segments_CM.numpy()}")
         logging.info(f"ACC: train:{train_acc:.2%} verify:{test_acc:.2%}")
         # logging.info(f"segments_TPR:{segments_TPR:.2%}")

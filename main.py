@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument("--learning_rate", type=float, default=0.05, help="learning_rate for training")
     parser.add_argument("--ap_ratio", type=float, default=1.0, help="ratio of absent and present")
     parser.add_argument("--beta", type=float, default=(0.9, 0.98), help="beta")
-    parser.add_argument("--loss_type", type=str, default="FocalLoss", help="loss function", choices=["CE", "FocalLoss"])
+    parser.add_argument("--loss_type", type=str, default="CE", help="loss function", choices=["CE", "FocalLoss"])
     parser.add_argument("--scheduler_flag", type=str, default=None, help="the dataset used",
                         choices=["cos", "MultiStepLR", "step"])
     parser.add_argument("--mask", type=bool, default=False, help="number of classes", choices=[True, False])
