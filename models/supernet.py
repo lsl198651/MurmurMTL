@@ -1,6 +1,5 @@
 import copy
 
-import torch
 import torch.nn as nn
 
 from models import BasicNetwork, ExpertModule, MixedExpert, MixFeature, MixedOp

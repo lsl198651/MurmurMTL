@@ -6,7 +6,7 @@ dense_fields: [ ]
 sparse_fields: [ "user_id:token", "item_id:token", "category:token" ]
 label_fields: [ "click:label", "buy:label", "cart:label", "favourite:label" ]
 task_types:
-  [ "classification", "classification"]
+  [ "classification", "classification" ]
 num_workers: 8
 
 # -*- Result Configs -*- 
@@ -56,10 +56,10 @@ models:
           "MLP-16",
           "MLP-32",
           "MLP-64",
-#          "MLP-128",
-#          "MLP-256",
-#          "MLP-512",
-#          "MLP-1024",
+          #          "MLP-128",
+          #          "MLP-256",
+          #          "MLP-512",
+          #          "MLP-1024",
         ]
 
 epoch: 2

@@ -10,7 +10,6 @@ from torch.utils.data import DataLoader
 from torch.utils.data.sampler import WeightedRandomSampler
 
 from models.supernet import SuperNet
-from run_MTL import VAR_DICT
 from trainAndTest.train_eval import train_val
 from utils.util_dataloader import fold5_dataloader
 from utils.util_datasetClass import DatasetMTL

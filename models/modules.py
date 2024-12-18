@@ -113,8 +113,8 @@ class ExpertModule(BasicUnit):
             self.out_features = [out_features] * num_layers
 
         self.num_layers = num_layers
-        self.in_features=32
-        self.out_features=[32, 32, 32]
+        self.in_features = 32
+        self.out_features = [32, 32, 32]
 
         blocks = []
         for i in range(num_layers):
