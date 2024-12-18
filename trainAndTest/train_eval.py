@@ -52,20 +52,24 @@ def train_val(model,
     elif args.scheduler_flag == "MultiStepLR":
         scheduler = optim.lr_scheduler.MultiStepLR(optimizer, [30, 60, 90], gamma=0.1)
     # ========================/ 损失函数 /========================== #
-
+    loss_fn_murmur = FocalLoss()
+    loss_fn_segment = FocalLoss()
     if args.loss_type == "FocalLoss":
-        loss_fn = FocalLoss()
+        pass
     elif args.loss_type == "CE_weighted":
         normed_weights = [1, 5]
         normed_weights = torch.FloatTensor(normed_weights).to(device)
-        loss_fn = nn.CrossEntropyLoss(weight=normed_weights)  # 内部会自动加上Softmax层,weight=normedWeights
+        loss_fn_murmur = nn.CrossEntropyLoss(weight=normed_weights)  # 内部会自动加上Softmax层,weight=normedWeights
+        loss_fn_segment = nn.CrossEntropyLoss(weight=normed_weights)  # 内部会自动加上Softmax层,weight=normedWeights
     else:
-        loss_fn = nn.CrossEntropyLoss()
+        loss_fn_murmur = nn.CrossEntropyLoss()
+        loss_fn_segment = nn.CrossEntropyLoss()
     # ========================/ 训练网络 /========================== #
     for epochs in range(args.num_epochs):
         # train models
         model.train()
-        train_loss = 0
+        train_total_loss_murmur, train_total_loss_segment = 0, 0
+
         correct_t = 0
         train_len = 0
         input_train = []
@@ -74,12 +78,17 @@ def train_val(model,
             input_train, label_train, index_train, tag_item = \
                 input_train.to(device), label_train.to(device), index_train.to(device), tag_item.to(device)
             output_train = model(input_train)
-            loss_train = loss_fn(output_train, label_train.long())
+            output_murmur = output_train[0]
+            output_normal = output_train[1]
+            train_loss_murmur = loss_fn_murmur(output_murmur, label_train.long())
+            train_loss_segment = loss_fn_segment(output_normal, tag_item)
+
             optimizer.zero_grad()
-            loss_train.backward()
+            (train_loss_murmur + train_loss_segment).backward()
             optimizer.step()
 
-            train_loss += loss_train.item()
+            train_total_loss_murmur += train_loss_murmur.item()
+            train_total_loss_segment += train_loss_segment.item()
             # get the index of the max log-probability
             pred_t = output_train.max(1, keepdim=True)[1]
             pred_t = pred_t.squeeze(1)
@@ -148,7 +157,7 @@ def train_val(model,
         lr.append(lr_now)
         # "更新权值"
         test_loss /= len(pred)
-        train_loss /= train_len
+        train_total_loss_murmur /= train_len
         max_train_acc.append(train_acc)
         max_test_acc.append(test_acc)
         max_train_acc_value = max(max_train_acc)
@@ -157,7 +166,7 @@ def train_val(model,
         if args.isTensorboard:
             tb_writer.add_scalar("train_acc", train_acc, epochs)
             tb_writer.add_scalar("test_acc", test_acc, epochs)
-            tb_writer.add_scalar("train_loss", train_loss, epochs)
+            tb_writer.add_scalar("train_loss", train_total_loss_murmur, epochs)
             tb_writer.add_scalar("test_loss", test_loss, epochs)
             tb_writer.add_scalar("learning_rate", lr_now, epochs)
             # tb_writer.add_scalar("patient_acc", test_patient_acc, epochs)
@@ -165,7 +174,7 @@ def train_val(model,
         logging.info(f"============================")
         logging.info(f"EPOCH: {epochs + 1}/{args.num_epochs}")
         logging.info(f"Learning rate: {lr_now:.1e}")
-        logging.info(f"LOSS: train:{train_loss:.2e} verify:{test_loss:.2e}")
+        logging.info(f"LOSS: train:{train_total_loss_murmur:.2e} verify:{test_loss:.2e}")
         logging.info(f"segments_CM:{segments_CM.numpy()}")
         logging.info(f"ACC: train:{train_acc:.2%} verify:{test_acc:.2%}")
         # logging.info(f"segments_TPR:{segments_TPR:.2%}")

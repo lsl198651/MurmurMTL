@@ -57,7 +57,7 @@ class SuperNet(BasicNetwork):
         # self.input_dim = (
         #         self.embedding_dim * (self.n_feilds + 1) + self.embedding.n_dense
         # )
-        self.input_dim =self.embedding_dim * (self.n_feilds + 1)
+        self.input_dim = self.embedding_dim * (self.n_feilds + 1)
 
         self.n_experts = n_experts
         self.n_expert_layers = n_expert_layers
@@ -111,11 +111,17 @@ class SuperNet(BasicNetwork):
         self.towers = nn.ModuleList(
             [
                 MLP(
-                    [out_features] + tower_layers,
+                    [32, 128],
+                    1,
+                    dropout=dropout,
+                    contain_output_layer=True,
+                ),
+                MLP(
+                    [32, 128],
+                    250,
                     dropout=dropout,
                     contain_output_layer=True,
                 )
-                for _ in range(self.n_tasks)
             ]
         )
 
@@ -155,7 +161,7 @@ class SuperNet(BasicNetwork):
         mix_features = temp
 
         outs = [self.towers[i](mix_features[i]) for i in range(self.n_tasks)]
-        outs = torch.cat(outs, dim=1)
+        # outs = torch.cat(outs, dim=1)
 
         return outs
 
