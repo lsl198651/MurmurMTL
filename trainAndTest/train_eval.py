@@ -7,8 +7,7 @@ import torch.nn as nn
 from sklearn.metrics import confusion_matrix
 from torch import optim
 from torch.utils.tensorboard import SummaryWriter
-from torcheval.metrics.functional import binary_confusion_matrix, \
-    binary_accuracy
+from torcheval.metrics.functional import binary_accuracy
 from transformers import optimization
 
 from utils.util_loss import FocalLoss
@@ -157,7 +156,7 @@ def train_val(model,
         if args.isSegments:
             result, target = new_segment_cluster(result_list_present, args.test_fold, args.set_name)
         else:
-            result, target = new_duration_cluster(result_list_present, args.test_fold, args.set_name)
+            result, target = new_duration_cluster(result_list_present, args.test_fold, args.set_path + args.set_name, )
         test_patient_input, test_patient_target = torch.as_tensor(result), torch.as_tensor(target)
         patient_ACC = binary_accuracy(test_patient_input, test_patient_target)
         patient_CM = confusion_matrix(result, target)

@@ -82,9 +82,9 @@ def new_segment_cluster(present_result_list: list, test_fold: list, set_name: st
     return result, target
 
 
-def new_duration_cluster(present_result_list: list, test_fold: list, set_name: str):
+def new_duration_cluster(present_result_list: list, test_fold: list, set_path: str):
     global present_id
-    root_path = fr"E:\Shilong\02_dataset{set_name}\npyFile_padded\organized_data"
+    root_path = fr"{set_path}\npyFile_padded\organized_data"
     all_result_dic = {}
     for k in test_fold:
         present_result_set = set(present_result_list)
@@ -104,7 +104,7 @@ def new_duration_cluster(present_result_list: list, test_fold: list, set_name: s
             else:
                 test_dic[present_test_dic_key] = present_test_dic[present_test_dic_key]
 
-        present_csv_name = rf"E:\Shilong\02_dataset{set_name}\present_fold_{k}.csv"
+        present_csv_name = rf"{set_path}\present_fold_{k}.csv"
         present_id = csv_reader_cl(present_csv_name, 0)
 
         # test_dic = {**absent_test_dic, **present_test_dic}
@@ -150,7 +150,7 @@ def get_patient_res(res_idc: dict):
     return patient_res
 
 
-def segment_classifier(result_list_1: list, test_fold: list, set_type: str):
+def segment_classifier(result_list_1: list, test_fold: list, set_path: str):
     """
     本fn计算了针对每个location和patient的acc和cm
     Args:
@@ -160,7 +160,7 @@ def segment_classifier(result_list_1: list, test_fold: list, set_type: str):
         _type_: _description_
     """
     global absent_test_index, present_test_index, present_test_names, absent_test_names
-    npy_path_padded = r"D:\Shilong\new_murmur\02_dataset" + set_type + r"\npyFile_padded\npy_files01_norm"
+    npy_path_padded = rf"{set_path}\npyFile_padded\npy_files01_norm"
     # if len(test_fold) == 1:
     for k in test_fold:
         absent_test_index = np.load(npy_path_padded + f"\\absent_index_norm01_fold{k}.npy", allow_pickle=True)

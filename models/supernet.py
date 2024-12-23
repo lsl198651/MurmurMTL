@@ -123,13 +123,17 @@ class SuperNet(BasicNetwork):
                 )
             ]
         )
-
-        self.conv = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
+        self.inplanes = 32
+        self.conv = nn.Conv2d(1, self.inplanes, kernel_size=3, padding=1)
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
+        self.relu = nn.ReLU(inplace=True)
         self.dense = nn.Linear(163840, 16)
 
     def forward(self, features):
         features = features.unsqueeze(1)
         x = self.conv(features)
+        x = self.bn1(x)
+        x = self.relu(x)
         x = x.flatten(start_dim=1)
         x = self.dense(x)
 
