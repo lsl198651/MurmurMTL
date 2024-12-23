@@ -29,7 +29,7 @@ def train_val(model,
         os.makedirs(error_index_path)
     if not os.path.exists(patient_error_index_path):
         os.makedirs(patient_error_index_path)
-    tb_writer = SummaryWriter(r"./tensorboard/" + str(datetime.now().strftime("%Y-%m%d %H%M")))
+
     confusion_matrix_path = r"./confusion_matrix/" + str(datetime.now().strftime("%Y-%m%d %H%M"))
     lr = []
     max_test_acc = []
@@ -179,6 +179,7 @@ def train_val(model,
         max_test_acc_value = max_test_acc[max_train_acc.index(max_train_acc_value)]
         # ========================/ tensorboard绘制曲线  /========================== #
         if args.isTensorboard:
+            tb_writer = SummaryWriter(r"./tensorboard/" + str(datetime.now().strftime("%Y-%m%d %H%M")))
             tb_writer.add_scalar("train_acc", train_acc, epochs)
             tb_writer.add_scalar("test_acc", test_acc, epochs)
             tb_writer.add_scalar("train_loss", train_total_loss_murmur, epochs)
