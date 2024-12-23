@@ -33,7 +33,7 @@ def logger_init(
 
 def new_segment_cluster(present_result_list: list, test_fold: list, set_name: str):
     global present_id
-    root_path = fr"D:\Shilong\new_murmur\02_dataset{set_name}\npyFile_padded\organized_data"
+    root_path = fr"E:\Shilong\02_dataset{set_name}\npyFile_padded\organized_data"
     all_result_dic = {}
     for k in test_fold:
         present_result_set = set(present_result_list)
@@ -50,7 +50,7 @@ def new_segment_cluster(present_result_list: list, test_fold: list, set_name: st
             else:
                 test_dic[test_dic_key] = present_test_dic[test_dic_key]
 
-        present_csv_name = rf"D:\Shilong\new_murmur\02_dataset{set_name}\present_fold_{k}.csv"
+        present_csv_name = rf"E:\Shilong\02_dataset{set_name}\present_fold_{k}.csv"
         present_id = csv_reader_cl(present_csv_name, 0)
 
         # test_dic = {**absent_test_dic, **present_test_dic}
@@ -84,7 +84,7 @@ def new_segment_cluster(present_result_list: list, test_fold: list, set_name: st
 
 def new_duration_cluster(present_result_list: list, test_fold: list, set_name: str):
     global present_id
-    root_path = fr"D:\Shilong\new_murmur\02_dataset{set_name}\npyFile_padded\organized_data"
+    root_path = fr"E:\Shilong\02_dataset{set_name}\npyFile_padded\organized_data"
     all_result_dic = {}
     for k in test_fold:
         present_result_set = set(present_result_list)
@@ -104,7 +104,7 @@ def new_duration_cluster(present_result_list: list, test_fold: list, set_name: s
             else:
                 test_dic[present_test_dic_key] = present_test_dic[present_test_dic_key]
 
-        present_csv_name = rf"D:\Shilong\new_murmur\02_dataset{set_name}\present_fold_{k}.csv"
+        present_csv_name = rf"E:\Shilong\02_dataset{set_name}\present_fold_{k}.csv"
         present_id = csv_reader_cl(present_csv_name, 0)
 
         # test_dic = {**absent_test_dic, **present_test_dic}
