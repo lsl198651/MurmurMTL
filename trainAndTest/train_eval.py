@@ -154,12 +154,12 @@ def train_val(model,
         #                                  index=False,
         #                                  header=False)
         if args.isSegments:
-            result, target = new_segment_cluster(result_list_present, args.test_fold, args.set_name)
+            result, target = new_segment_cluster(result_list_present, args.test_fold, args.set_path + args.set_name)
         else:
-            result, target = new_duration_cluster(result_list_present, args.test_fold, args.set_path + args.set_name, )
+            result, target = new_duration_cluster(result_list_present, args.test_fold, args.set_path + args.set_name)
         test_patient_input, test_patient_target = torch.as_tensor(result), torch.as_tensor(target)
         patient_ACC = binary_accuracy(test_patient_input, test_patient_target)
-        patient_CM = confusion_matrix(result, target)
+        patient_CM = confusion_matrix(target, result)
         # 这两个算出来的都是present的
 
         "保存最好的模型"

@@ -507,9 +507,9 @@ class MurmurMTL:
         data = pd.concat([df_train, df_val, df_test], axis=0)
         dense_cols = config['dense_fields']
         sparse_cols = config['sparse_fields']
-        print("sparse cols:%d dense cols:%d" % (len(sparse_cols), len(dense_cols)))
+        print("sparse cols:%d fc1 cols:%d" % (len(sparse_cols), len(dense_cols)))
 
-        # define dense and sparse features
+        # define fc1 and sparse features
         label_cols = config['label_fields']  # the order of labels can be any
         used_cols = sparse_cols + dense_cols
         features = [

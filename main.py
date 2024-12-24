@@ -53,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument("--set_name", type=str, default=r"\02_5s_4k_txt")
     parser.add_argument("--model_folder", type=str, default=r"E:\Shilong\01_Code\MurmurMTL\models\MyModels")
     parser.add_argument("--isTensorboard", type=bool, default=False)
-    parser.add_argument("--isSegments", type=bool, default=True)
+    parser.add_argument("--isSegments", type=bool, default=False)
     parser.add_argument("--saveModel", type=bool, default=True)
     parser.add_argument("--isTry", type=bool, default=False)
     # TODO 改模型名字
@@ -103,7 +103,7 @@ if __name__ == '__main__':
                             num_workers=4)
 
     # ========================/ 选择模型 /========================== #
-    print(config)
+
     MyModel = SuperNet(embedding_dim=config['embedding_dim'],
                        task_types=config["task_types"],
                        n_experts=config["models"]["kwargs"]["n_experts"],
@@ -114,6 +114,7 @@ if __name__ == '__main__':
                        tower_layers=config["models"]["kwargs"]["tower_layers"],
                        dropout=config["models"]["kwargs"]["dropout"],
                        expert_candidate_ops=config["models"]["kwargs"]["expert_module"]["ops"])
+    print(MyModel)
 
     # ========================/ 打印日志 /========================== #
     if args.isTry:

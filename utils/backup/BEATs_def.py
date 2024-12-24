@@ -566,7 +566,7 @@ def sigmoid_focal_loss(
         gamma: float = 2,
 ) -> torch.Tensor:
     """
-    Loss used in RetinaNet for dense detection: https://arxiv.org/abs/1708.02002.
+    Loss used in RetinaNet for fc1 detection: https://arxiv.org/abs/1708.02002.
 
     Args:
         inputs (Tensor): A float tensor of arbitrary shape.

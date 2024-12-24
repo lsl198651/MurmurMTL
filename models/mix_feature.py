@@ -45,7 +45,7 @@ class MixFeature(BasicUnit):
         Args:
             embs (Tensor): features after embedding
                 [batch size, nfields, embedding size]
-            dense_fea (Tensor): dense features.
+            dense_fea (Tensor): fc1 features.
                 [batch size, n_dense_fields]
 
         Returns:

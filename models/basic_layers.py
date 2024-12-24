@@ -45,14 +45,14 @@ class EmbeddingLayer(nn.Module):
     Shape:
         - Input: 
             x (dict): {feature_name: feature_value}, sequence feature value is a 2D tensor with shape:`(batch_size, seq_len)`,\
-                      sparse/dense feature value is a 1D tensor with shape `(batch_size)`.
+                      sparse/fc1 feature value is a 1D tensor with shape `(batch_size)`.
             features (list): the list of `Feature Class`. It is means the current features which we want to do embedding lookup.
             squeeze_dim (bool): whether to squeeze dim of output (default = `False`).
         - Output: 
             - if input Dense: `(batch_size, num_features_dense)`.
             - if input Sparse: `(batch_size, num_features, embed_dim)` or  `(batch_size, num_features * embed_dim)`.
             - if input Sequence: same with input sparse or `(batch_size, num_features_seq, seq_length, embed_dim)` when `pooling=="concat"`.
-            - if input Dense and Sparse/Sequence: `(batch_size, num_features_sparse * embed_dim)`. Note we must squeeze_dim for concat dense value with sparse embedding.
+            - if input Dense and Sparse/Sequence: `(batch_size, num_features_sparse * embed_dim)`. Note we must squeeze_dim for concat fc1 value with sparse embedding.
     """
 
     def __init__(self, features):
@@ -102,7 +102,7 @@ class EmbeddingLayer(nn.Module):
         if (
                 squeeze_dim
         ):  # Note: if the emb_dim of sparse features is different, we must squeeze_dim
-            if dense_exists and not sparse_exists:  # only input dense features
+            if dense_exists and not sparse_exists:  # only input fc1 features
                 return dense_values
             elif not dense_exists and sparse_exists:
                 return sparse_emb.flatten(
@@ -111,7 +111,7 @@ class EmbeddingLayer(nn.Module):
             elif dense_exists and sparse_exists:
                 return torch.cat(
                     (sparse_emb.flatten(start_dim=1), dense_values), dim=1
-                )  # concat dense value with sparse embedding
+                )  # concat fc1 value with sparse embedding
             else:
                 raise ValueError("The input features can note be empty")
         else:

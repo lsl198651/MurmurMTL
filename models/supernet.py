@@ -100,8 +100,7 @@ class SuperNet(BasicNetwork):
                     MixedExpert(80, n_choices=self.n_experts)
                     for _ in range(
                     self.n_experts if i < self.n_expert_layers - 1
-                    else self.n_tasks
-                )
+                    else self.n_tasks)
                 ]
             )
             for i in range(self.n_expert_layers)
@@ -127,15 +126,18 @@ class SuperNet(BasicNetwork):
         self.conv = nn.Conv2d(1, self.inplanes, kernel_size=3, padding=1)
         self.bn1 = nn.BatchNorm2d(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
-        self.dense = nn.Linear(163840, 16)
+        self.fc1 = nn.Linear(128, 16)
+        self.average_pool = nn.AdaptiveAvgPool2d((2, 2))
 
     def forward(self, features):
         features = features.unsqueeze(1)
         x = self.conv(features)
         x = self.bn1(x)
         x = self.relu(x)
+        x = self.average_pool(x)
+
         x = x.flatten(start_dim=1)
-        x = self.dense(x)
+        x = self.fc1(x)
 
         embs, dense_fea = x, None
         embs = embs.unsqueeze(1)

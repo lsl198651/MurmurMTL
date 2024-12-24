@@ -31,9 +31,9 @@ def logger_init(
     logging.disable(logging.DEBUG)
 
 
-def new_segment_cluster(present_result_list: list, test_fold: list, set_name: str):
+def new_segment_cluster(present_result_list: list, test_fold: list, set_path: str):
     global present_id
-    root_path = fr"E:\Shilong\02_dataset{set_name}\npyFile_padded\organized_data"
+    root_path = fr"{set_path}\npyFile_padded\organized_data"
     all_result_dic = {}
     for k in test_fold:
         present_result_set = set(present_result_list)
@@ -50,7 +50,7 @@ def new_segment_cluster(present_result_list: list, test_fold: list, set_name: st
             else:
                 test_dic[test_dic_key] = present_test_dic[test_dic_key]
 
-        present_csv_name = rf"E:\Shilong\02_dataset{set_name}\present_fold_{k}.csv"
+        present_csv_name = rf"{set_path}\present_fold_{k}.csv"
         present_id = csv_reader_cl(present_csv_name, 0)
 
         # test_dic = {**absent_test_dic, **present_test_dic}

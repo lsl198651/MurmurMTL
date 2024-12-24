@@ -43,14 +43,14 @@ class EmbeddingLayer(nn.Module):
     Shape:
         - Input:
             x (dict): {feature_name: feature_value}, sequence feature value is a 2D tensor with shape:`(batch_size, seq_len)`,\
-                      sparse/dense feature value is a 1D tensor with shape `(batch_size)`.
+                      sparse/fc1 feature value is a 1D tensor with shape `(batch_size)`.
             features (list): the list of `Feature Class`. It is means the current features which we want to do embedding lookup.
             squeeze_dim (bool): whether to squeeze dim of output (default = `False`).
         - Output:
             - if input Dense: `(batch_size, num_features_dense)`.
             - if input Sparse: `(batch_size, num_features, embed_dim)` or  `(batch_size, num_features * embed_dim)`.
             - if input Sequence: same with input sparse or `(batch_size, num_features_seq, seq_length, embed_dim)` when `pooling=="concat"`.
-            - if input Dense and Sparse/Sequence: `(batch_size, num_features_sparse * embed_dim)`. Note we must squeeze_dim for concat dense value with sparse embedding.
+            - if input Dense and Sparse/Sequence: `(batch_size, num_features_sparse * embed_dim)`. Note we must squeeze_dim for concat fc1 value with sparse embedding.
     """
 
     def __init__(self, features):
