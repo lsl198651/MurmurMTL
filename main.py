@@ -30,10 +30,11 @@ if __name__ == '__main__':
     parser.add_argument("--num_layers", type=int, default=3, help="layers number")
     parser.add_argument("--freqm_value", type=int, default=0, help="frequency mask max length")
     parser.add_argument("--timem_value", type=int, default=0, help="time mask max length")
-    parser.add_argument("--learning_rate", type=float, default=0.05, help="learning_rate for training")
+    parser.add_argument("--learning_rate", type=float, default=0.5, help="learning_rate for training")
     parser.add_argument("--ap_ratio", type=float, default=1.0, help="ratio of absent and present")
     parser.add_argument("--beta", type=float, default=(0.9, 0.98), help="beta")
-    parser.add_argument("--loss_type", type=str, default="CE", help="loss function", choices=["CE", "FocalLoss"])
+    parser.add_argument("--loss_type", type=str, default="CE", help="loss function",
+                        choices=["CE", "FocalLoss,CE_weighted"])
     parser.add_argument("--scheduler_flag", type=str, default=None, help="the dataset used",
                         choices=["cos", "MultiStepLR", "step"])
     parser.add_argument("--mask", type=bool, default=False, help="number of classes", choices=[True, False])
@@ -49,6 +50,7 @@ if __name__ == '__main__':
     parser.add_argument("--train_fold", default=['0', '1', '2', '3'])
     parser.add_argument("--test_fold", default=['4'])
     parser.add_argument("--fold_res", default=[])
+    parser.add_argument("--aplha", type=float, default=0.5)
     parser.add_argument("--fold_best_ACC", default=0)
     parser.add_argument("--set_name", type=str, default=r"\02_5s_4k_txt")
     parser.add_argument("--model_folder", type=str, default=r"E:\Shilong\01_Code\MurmurMTL\models\MyModels")

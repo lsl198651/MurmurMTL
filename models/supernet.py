@@ -111,12 +111,14 @@ class SuperNet(BasicNetwork):
                 MLP(
                     [32, 128],
                     1,
+                    channel_num=2,
                     dropout=dropout,
                     contain_output_layer=True,
                 ),
                 MLP(
                     [32, 128],
                     250,
+                    channel_num=5,
                     dropout=dropout,
                     contain_output_layer=True,
                 )

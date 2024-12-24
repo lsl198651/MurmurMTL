@@ -161,6 +161,7 @@ class MLP(nn.Module):
             outdim,
             dropout=0.0,
             activate="relu",
+            channel_num=1,
             bn=True,
             init_method=None,
             contain_output_layer=False,
@@ -171,21 +172,29 @@ class MLP(nn.Module):
         self.activate = activate
         self.use_bn = bn
         self.init_method = init_method
+        self.channel_num = channel_num
+
+        self.conv1 = nn.Conv1d(in_channels=1, out_channels=channel_num, kernel_size=3, stride=1, padding=1)
+        self.fc2=nn.Linear(32,128)
+        self.bn=nn.BatchNorm1d(2)
 
         mlp_modules = []
         for i, (input_size, output_size) in enumerate(
                 zip(self.layers[:-1], self.layers[1:])
         ):
+            mlp_modules.append(nn.Conv1d(in_channels=1, out_channels=channel_num, kernel_size=1, stride=1))
+
+
             mlp_modules.append(nn.Linear(input_size, output_size))
             if self.use_bn:
-                mlp_modules.append(nn.BatchNorm1d(num_features=output_size))
+                mlp_modules.append(nn.BatchNorm1d(num_features=channel_num))
             activate_func = activate_layer(activate_name=activate)
             if activate_func is not None:
                 mlp_modules.append(activate_func)
             mlp_modules.append(nn.Dropout(p=self.dropout))
 
         if contain_output_layer:
-            mlp_modules.append(nn.Linear(self.layers[-1], outdim))
+            mlp_modules.append(nn.Linear(128, outdim))
 
         self.mlp_layers = nn.Sequential(*mlp_modules)
         if self.init_method is not None:
@@ -199,6 +208,10 @@ class MLP(nn.Module):
                 module.bias.features.fill_(0.0)
 
     def forward(self, input_x):
+        input_x = input_x.unsqueeze(1)
+        # conv1_out = self.conv1(input_x)
+        # fc2_out = self.fc2(conv1_out)
+        # bn=self.bn(fc2_out)
         return self.mlp_layers(input_x)
 
 
